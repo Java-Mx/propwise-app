@@ -58,6 +58,7 @@ module.exports = {
   			ok: '#2F8F6B',
   			warn: '#C58B32',
   			err: '#B95C5C',
+  			pagebg: '#F3F6FA',
   			appbg: '#F5F7FA',
   			inputbg: '#FAFBFC',
   			ink: '#172033',

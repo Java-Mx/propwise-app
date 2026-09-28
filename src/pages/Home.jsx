@@ -178,7 +178,7 @@ export default function Home() {
   const activeTabObj = TABS.find((t) => t.key === activeTab);
 
   return (
-    <div className="min-h-screen bg-background text-ink">
+    <div className="min-h-screen bg-pagebg text-ink">
       {/* Header */}
       <PropWiseHeader
         activeTab={activeTab}
