@@ -10,6 +10,7 @@ import Landing from '@/pages/Landing';
 import Analysis from '@/pages/Analysis';
 import SavedAnalyses from '@/pages/SavedAnalyses';
 import { AnalysisProvider } from '@/lib/AnalysisContext';
+import { MobileToolsProvider } from '@/components/propwise/MobileTools';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -38,6 +39,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <AnalysisProvider>
+      <MobileToolsProvider>
       <Routes>
         {/* Add your page Route elements here */}
         <Route path="/" element={<Landing />} />
@@ -47,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/tools/saved" element={<SavedAnalyses />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
+      </MobileToolsProvider>
     </AnalysisProvider>
   );
 };

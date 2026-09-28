@@ -21,12 +21,12 @@ export default function InvestmentTab({ inputs, set, r, sub: subProp, setSub: se
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-1 rounded-lg bg-appbg p-1">
+      <div className="no-scrollbar flex items-center gap-2 overflow-x-auto rounded-lg bg-appbg p-1">
         {SUB_TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setSub(t.key)}
-            className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${sub === t.key ? "bg-white text-ink shadow-sm" : "text-sub hover:text-ink"}`}
+            className={`flex-1 shrink-0 rounded-full px-4 py-2 text-sm font-medium transition active:scale-[0.98] ${sub === t.key ? "bg-brand text-white" : "bg-white text-sub border border-line"}`}
           >
             {t.label}
           </button>

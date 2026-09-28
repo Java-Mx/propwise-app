@@ -4,7 +4,7 @@ import {
   formatINR, formatCompact, FREQUENCIES,
   MONTHLY_CATEGORIES, ANNUAL_CATEGORIES, ONETIME_CATEGORIES,
 } from "@/lib/finance";
-import { Plus, Trash2, Wallet } from "lucide-react";
+import { Plus, Trash2, Wallet, ChevronDown } from "lucide-react";
 
 export default function PropertyCostsTab({ inputs, set, r }) {
   const costs = inputs.costs || [];
@@ -34,6 +34,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
         onUpdate={updateCost}
         onRemove={removeCost}
         allowFrequency
+        defaultOpen
       />
       <CostSection
         id="costs-annual"
@@ -45,6 +46,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
         onUpdate={updateCost}
         onRemove={removeCost}
         allowFrequency
+        defaultOpen={false}
       />
       <CostSection
         id="costs-onetime"
@@ -55,6 +57,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
         onAdd={() => addCost("onetime")}
         onUpdate={updateCost}
         onRemove={removeCost}
+        defaultOpen={false}
       />
 
       {/* Totals */}
@@ -80,7 +83,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
   );
 }
 
-function CostSection({ id, title, section, categories, costs, onAdd, onUpdate, onRemove, allowFrequency }) {
+function CostSection({ id, title, section, categories, costs, onAdd, onUpdate, onRemove, allowFrequency, defaultOpen = true }) {
   const items = costs.filter((c) => c.section === section);
   const freqOptions = section === "onetime" ? ["One-Time"] : FREQUENCIES.filter((f) => f !== "One-Time");
   return (
@@ -88,8 +91,16 @@ function CostSection({ id, title, section, categories, costs, onAdd, onUpdate, o
       id={id}
       title={title}
       subtitle={`Add the ${title.toLowerCase()} that apply to your purchase.`}
-      right={<Button variant="primary" size="sm" icon={Plus} onClick={onAdd}>Add Cost</Button>}
+      collapsible
+      defaultOpen={defaultOpen}
+      right={<Button variant="primary" size="sm" icon={Plus} onClick={onAdd} className="hidden md:inline-flex">Add Cost</Button>}
     >
+      <button
+        onClick={onAdd}
+        className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-jade text-sm font-semibold text-white active:scale-[0.98] md:hidden"
+      >
+        <Plus className="h-4 w-4" /> Add Cost
+      </button>
       {items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-line bg-appbg px-4 py-8 text-center text-sm text-sub">
           <Wallet className="mx-auto mb-2 h-5 w-5 text-sub/60" />

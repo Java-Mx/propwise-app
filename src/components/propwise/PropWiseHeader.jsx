@@ -8,6 +8,7 @@ import {
   Plus, FolderOpen, Save, Download, Settings, Info, X, Pencil,
 } from "lucide-react";
 import Logo from "@/components/propwise/Logo";
+import { useMobileTools } from "@/components/propwise/MobileTools";
 
 const MENUS = [
   {
@@ -97,9 +98,8 @@ export default function PropWiseHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const analysis = useAnalysis();
+  const { openTools } = useMobileTools();
   const [openMenu, setOpenMenu] = useState(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSub, setMobileSub] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [renameVal, setRenameVal] = useState(analysis.inputs.title || "");
@@ -120,7 +120,7 @@ export default function PropWiseHeader() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") { setOpenMenu(null); setMobileOpen(false); }
+      if (e.key === "Escape") { setOpenMenu(null); }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -128,8 +128,6 @@ export default function PropWiseHeader() {
 
   const go = (menu, item) => {
     setOpenMenu(null);
-    setMobileOpen(false);
-    setMobileSub(null);
     const search = item.invSub ? `?sub=${item.invSub}` : "";
     const hash = item.anchor ? `#${item.anchor}` : "";
     navigate(`${menu.route}${search}${hash}`);
@@ -137,8 +135,6 @@ export default function PropWiseHeader() {
 
   const handleAction = (item) => {
     setOpenMenu(null);
-    setMobileOpen(false);
-    setMobileSub(null);
     switch (item.action) {
       case "new": analysis.requestNew(); break;
       case "save": analysis.requestSave(); break;
@@ -194,10 +190,10 @@ export default function PropWiseHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-3 px-4">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:h-[72px]">
         {/* Logo */}
         <button onClick={() => navigate("/")} className="flex items-center text-left" aria-label="PropWise home">
-          <Logo size={36} showTagline />
+          <Logo size={32} showTagline />
         </button>
 
         {/* Desktop nav */}
@@ -225,60 +221,35 @@ export default function PropWiseHeader() {
           })}
         </nav>
 
-        {/* Mobile toggle */}
+        {/* Mobile tools action */}
         <button
-          onClick={() => setMobileOpen((v) => !v)}
-          className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink hover:bg-appbg md:hidden"
-          aria-label="Menu"
+          onClick={openTools}
+          className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white text-steel active:scale-[0.98] md:hidden"
+          aria-label="Tools"
         >
-          {mobileOpen ? <X className="h-5 w-5" /> : <ChevronDown className="h-5 w-5 -rotate-90" />}
+          <Wrench className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Mobile panel */}
-      {mobileOpen && (
-        <div className="border-t border-line bg-white px-4 py-2 md:hidden">
-          {MENUS.map((menu) => {
-            const MenuIcon = menu.icon;
-            return (
-              <div key={menu.key} className="border-b border-line/60 last:border-0">
-                <button
-                  onClick={() => setMobileSub(mobileSub === menu.key ? null : menu.key)}
-                  className="flex w-full items-center justify-between py-3 text-sm font-medium text-ink"
-                >
-                  <span className="flex items-center gap-2">
-                    {MenuIcon && <MenuIcon className="h-4 w-4 text-sub" />}
-                    {menu.label}
-                  </span>
-                  <ChevronDown className={cn("h-4 w-4 text-sub transition-transform", mobileSub === menu.key && "rotate-180")} />
-                </button>
-                {mobileSub === menu.key && (
-                  <div className="pb-3">
-                    {menu.sections.map((s) => (
-                      <div key={s.heading} className="mb-2">
-                        <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-sub">{s.heading}</div>
-                        {s.items.map((item) => {
-                          const Icon = item.icon;
-                          return (
-                            <button
-                              key={item.label}
-                              onClick={() => handleItem(menu, item)}
-                              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink hover:bg-[#E8F5F1] hover:text-jade"
-                            >
-                              {Icon ? <Icon className="h-4 w-4 text-jade" /> : <span className="h-4 w-4" />}
-                              {item.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Mobile pill navigation */}
+      <nav className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 md:hidden">
+        {MENUS.map((menu) => {
+          const isActive = activeTab === menu.key;
+          const isTools = menu.key === "tools";
+          return (
+            <button
+              key={menu.key}
+              onClick={() => (isTools ? openTools() : navigate(menu.route))}
+              className={cn(
+                "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
+                isActive ? "bg-brand text-white" : "border border-line bg-white text-steel"
+              )}
+            >
+              {menu.label}
+            </button>
+          );
+        })}
+      </nav>
 
       {/* Settings modal */}
       <Modal open={showSettings} onClose={() => setShowSettings(false)} title="Settings">

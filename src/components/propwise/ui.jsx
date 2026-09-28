@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { indianFormat } from "@/lib/finance";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // ---------- Button ----------
 
@@ -176,7 +177,29 @@ export function ChoiceInput({ value, onChange, options, suffix = "%", allowCusto
 
 // ---------- Section ----------
 
-export function Section({ title, subtitle, children, right, className, id }) {
+export function Section({ title, subtitle, children, right, className, id, collapsible = false, defaultOpen = true }) {
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(defaultOpen);
+
+  if (collapsible && isMobile) {
+    return (
+      <section id={id} className={cn("rounded-xl border border-line bg-white scroll-mt-24", className)}>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center justify-between gap-3 p-4 text-left"
+          aria-expanded={open}
+        >
+          <div>
+            <h3 className="text-base font-semibold text-ink">{title}</h3>
+            {subtitle && <p className="mt-0.5 text-sm text-sub">{subtitle}</p>}
+          </div>
+          <ChevronDown className={cn("h-5 w-5 shrink-0 text-sub transition-transform", open && "rotate-180")} />
+        </button>
+        {open && <div className="px-4 pb-4">{children}</div>}
+      </section>
+    );
+  }
+
   return (
     <section id={id} className={cn("rounded-xl border border-line bg-white p-5 shadow-sm scroll-mt-24", className)}>
       <div className="mb-4 flex items-start justify-between gap-3">

@@ -75,7 +75,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           )}
 
           {/* Funding breakdown */}
-          <Section id="aff-funding" title="Funding Breakdown" subtitle="How the purchase is funded.">
+          <Section id="aff-funding" title="Funding Breakdown" subtitle="How the purchase is funded." collapsible defaultOpen>
             <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
               <FundingRow label="Property price" value={formatINR(r.price)} />
               <FundingRow label="Available savings" value={formatINR(r.saved)} />
@@ -98,7 +98,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
 
           {/* Monthly cost + burden */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <Section id="aff-monthly" title="Monthly Cost" subtitle="Your monthly commitment to the property.">
+            <Section id="aff-monthly" title="Monthly Cost" subtitle="Your monthly commitment to the property." collapsible defaultOpen>
               <CostRow label="Estimated EMI" value={formatINR(r.emi)} />
               <CostRow label="Maintenance & other recurring" value={formatINR(r.recurringMonthly)} />
               <CostRow label="Existing EMI obligations" value={formatINR(r.existingEmi)} />
@@ -109,7 +109,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
               </div>
             </Section>
 
-            <Section title="Income Burden" subtitle="Property cost as a share of income.">
+            <Section title="Income Burden" subtitle="Property cost as a share of income." collapsible defaultOpen>
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-semibold text-ink">{formatPct(r.incomeBurden)}</span>
                 <Pill color={r.level.color}>{r.level.label}</Pill>
@@ -169,7 +169,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           </Section>
 
           {/* Future value */}
-          <Section id="aff-future" title="Estimated Future Property Value" subtitle="Based on your selected appreciation assumption.">
+          <Section id="aff-future" title="Estimated Future Property Value" subtitle="Based on your selected appreciation assumption." collapsible defaultOpen={false}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Projection Period">
                 <ChoiceInput value={inputs.projection_years} onChange={(v) => set("projection_years", v)} options={PROJECTION_OPTIONS} suffix=" yrs" placeholder="Select" renderOption={(o) => `${o} years`} />
@@ -269,7 +269,7 @@ function DecisionSection({ r, suggestions }) {
     "Requires further review";
 
   return (
-    <Section id="aff-assessment" title="What does this mean?" subtitle="A transparent, indicative assessment — not a recommendation.">
+    <Section id="aff-assessment" title="What does this mean?" subtitle="A transparent, indicative assessment — not a recommendation." collapsible defaultOpen={false}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {assessments.map((a) => (
           <div key={a.label} className="rounded-lg border border-line bg-appbg p-3">

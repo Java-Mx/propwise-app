@@ -6,6 +6,7 @@ import AffordabilityTab from "@/components/propwise/AffordabilityTab";
 import PropertyCostsTab from "@/components/propwise/PropertyCostsTab";
 import InvestmentTab from "@/components/propwise/InvestmentTab";
 import { Info, Pencil } from "lucide-react";
+import BottomNav from "@/components/propwise/BottomNav";
 
 const ROUTE_META = {
   "/analysis/affordability": {
@@ -88,7 +89,7 @@ export default function Analysis() {
         )}
       </main>
 
-      <footer className="mx-auto max-w-7xl px-4 pb-10">
+      <footer className="mx-auto max-w-7xl px-4 pb-28 md:pb-10">
         <div className="flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-xs text-sub ring-1 ring-line">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-sub" />
           <span>
@@ -97,6 +98,8 @@ export default function Analysis() {
           </span>
         </div>
       </footer>
+
+      <BottomNav />
     </div>
   );
 }
