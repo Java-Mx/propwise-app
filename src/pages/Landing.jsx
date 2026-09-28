@@ -2,6 +2,7 @@ import React from "react";
 import PropWiseHeader from "@/components/propwise/PropWiseHeader";
 import Hero from "@/components/propwise/home/Hero";
 import HeroDivider from "@/components/propwise/home/HeroDivider";
+import MetricsBand from "@/components/propwise/home/MetricsBand";
 import DataDecision from "@/components/propwise/home/DataDecision";
 import ThreeAreas from "@/components/propwise/home/ThreeAreas";
 import Scenarios from "@/components/propwise/home/Scenarios";
@@ -16,6 +17,7 @@ export default function Landing() {
       <main>
         <Hero />
         <div className="py-6"><HeroDivider /></div>
+        <MetricsBand />
         <DataDecision />
         <ThreeAreas />
         <Scenarios />

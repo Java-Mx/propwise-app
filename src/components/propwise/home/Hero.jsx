@@ -34,7 +34,7 @@ export default function Hero() {
               <span className="relative inline-block">
                 really cost.
                 <motion.span
-                  className="absolute bottom-1 left-0 h-[3px] w-full rounded-[2px] bg-jade"
+                  className="absolute -bottom-1 left-0 h-[3px] w-full rounded-[2px] bg-jade"
                   style={{ transformOrigin: "left center" }}
                   initial={reduce ? false : { scaleX: 0 }}
                   animate={reduce ? {} : { scaleX: 1 }}
