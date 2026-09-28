@@ -75,7 +75,7 @@ export default function MobileCalcCard() {
 
       {done && (
         <div className="mt-4 rounded-xl bg-brand px-4 py-4 text-white">
-          <div className="text-sm font-semibold">Your complete property picture.</div>
+          <div className="text-sm font-semibold">Your property picture is ready.</div>
           <button
             onClick={() => navigate("/analysis/affordability")}
             className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-jade text-[15px] font-semibold text-white active:scale-[0.98]"
