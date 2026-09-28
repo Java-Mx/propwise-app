@@ -56,7 +56,7 @@ export function NumberInput({ value, onChange, prefix = "₹", suffix, placehold
   const display = focused ? (v === "" ? "" : String(v)) : (v === "" || v == null ? "" : indianFormat(v));
   return (
     <div className={cn(
-      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
+      "flex items-center rounded-lg border border-line bg-inputbg transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
       compact ? "px-2.5 py-1.5" : "px-3 py-2"
     )}>
       {prefix && <span className="mr-1.5 text-sm text-sub select-none">{prefix}</span>}
@@ -85,7 +85,7 @@ export function PercentInput({ value, onChange, disabled, compact }) {
   const display = focused ? (v === "" ? "" : String(v)) : (v === "" || v == null ? "" : String(v));
   return (
     <div className={cn(
-      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
+      "flex items-center rounded-lg border border-line bg-inputbg transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
       compact ? "px-2.5 py-1.5" : "px-3 py-2"
     )}>
       <input
@@ -121,7 +121,7 @@ export function Select({ value, onChange, options, placeholder, disabled, render
         onChange(isNum ? Number(v) : v);
       }}
       className={cn(
-        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
+        "h-9 w-full rounded-lg border border-line bg-inputbg px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
         (value === "" || value == null) && "text-sub/60"
       )}
     >
@@ -161,7 +161,7 @@ export function ChoiceInput({ value, onChange, options, suffix = "%", allowCusto
         onChange(Number(e.target.value));
       }}
       className={cn(
-        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
+        "h-9 w-full rounded-lg border border-line bg-inputbg px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
         !isPreset && "text-sub/60"
       )}
     >
@@ -246,10 +246,10 @@ export function Info({ children }) {
 
 export function Alert({ tone = "warn", children }) {
   const tones = {
-    warn: "bg-warn/10 text-warn border-warn/20",
-    err: "bg-err/10 text-err border-err/20",
-    ok: "bg-ok/10 text-ok border-ok/20",
-    info: "bg-steel/10 text-steel border-steel/20",
+    warn: "bg-[#FFF6E5] text-warn border-warn/20",
+    err: "bg-[#FBECEC] text-err border-err/20",
+    ok: "bg-[#E8F5F1] text-ok border-ok/20",
+    info: "bg-appbg text-steel border-line",
   };
   return (
     <div className={cn("rounded-lg border px-3 py-2 text-sm", tones[tone])}>{children}</div>

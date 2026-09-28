@@ -59,9 +59,10 @@ module.exports = {
   			warn: '#C58B32',
   			err: '#B95C5C',
   			appbg: '#F5F7FA',
+  			inputbg: '#FAFBFC',
   			ink: '#172033',
   			sub: '#718096',
-  			line: '#E2E7EF',
+  			line: '#DDE4EC',
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',

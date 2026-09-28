@@ -170,7 +170,7 @@ export default function PropWiseHeader({
             <button
               key={item.label}
               onClick={() => handleItem(menu, item)}
-              className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#E8F5F1]"
+              className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#EDF7F4]"
             >
               {item.icon ? <item.icon className="h-4 w-4 text-sub group-hover:text-jade" /> : <span className="h-4 w-4" />}
               <span>{item.label}</span>
@@ -182,7 +182,7 @@ export default function PropWiseHeader({
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         {/* Logo */}
         <button onClick={() => onNavigate({ tab: activeTab, anchor: null })} className="flex items-center gap-2.5 text-left">
