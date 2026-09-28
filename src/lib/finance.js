@@ -321,3 +321,63 @@ export function computeScenarioSummary(s, appreciation) {
   const valueAfter10 = futureValue(price, num(appreciation), 10);
   return { price, loan, emi, monthlyCost: emi, rentalBenefit, netOutflow, valueAfter10, downPayment: Math.max(price - loan, 0) };
 }
+
+// ---------- Payoff with extra payment ----------
+
+export function payoffWithExtra(principal, annualRatePct, years, extraMonthly) {
+  const baseMonths = years * 12;
+  const baseEmi = calculateEMI(principal, annualRatePct, baseMonths);
+  const baseTotalInterest = Math.max(baseEmi * baseMonths - principal, 0);
+  const r = annualRatePct / 12 / 100;
+  let balance = principal;
+  let totalInterest = 0;
+  let m = 0;
+  const payment = baseEmi + Math.max(extraMonthly, 0);
+  const cap = baseMonths * 3 + 120;
+  while (balance > 0.01 && m < cap) {
+    const interest = balance * r;
+    let pp = payment - interest;
+    if (pp <= 0) { m = cap; break; } // payment too small to cover interest
+    if (pp >= balance) { totalInterest += interest; balance = 0; m++; break; }
+    totalInterest += interest;
+    balance -= pp;
+    m++;
+  }
+  return {
+    months: m,
+    totalInterest,
+    interestSaved: Math.max(baseTotalInterest - totalInterest, 0),
+    monthsReduced: Math.max(baseMonths - m, 0),
+    baseEmi,
+    baseTotalInterest,
+    baseMonths,
+  };
+}
+
+export function formatDuration(months) {
+  if (!months || months <= 0) return "0 mo";
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  if (y && m) return `${y} yr ${m} mo`;
+  if (y) return `${y} yr`;
+  return `${m} mo`;
+}
+
+// Breakdown of ownership cost components over a horizon
+export function costBreakdown(input) {
+  const { actualLoan, rate, tenure, emi, recurringMonthly, oneTimeTotal, monthlyRent, vacancy, rentalCosts, years } = input;
+  const horizon = Math.max(years || tenure || 1, 1);
+  const months = tenure * 12;
+  // lifetime = loan tenure (full interest + principal)
+  const lifeInterest = Math.max(emi * months - actualLoan, 0);
+  const lifePrincipal = actualLoan;
+  const lifeMaintenance = recurringMonthly * 12 * horizon;
+  const lifeOneTime = oneTimeTotal;
+  // approximate tax/insurance split from recurring — keep as "other recurring"
+  return {
+    principal: lifePrincipal,
+    interest: lifeInterest,
+    maintenance: lifeMaintenance,
+    oneTime: lifeOneTime,
+  };
+}

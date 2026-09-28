@@ -306,6 +306,22 @@ export function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", 
 
 // ---------- Empty state ----------
 
+// ---------- Apply / Reset bar for experimental tools ----------
+
+export function ApplyBar({ onApply, onReset, applyLabel = "Apply to Analysis", resetLabel = "Reset", dirty, note }) {
+  return (
+    <div className="mt-5 flex flex-col gap-2 rounded-lg border border-line bg-appbg p-3 sm:flex-row sm:items-center sm:justify-between">
+      {note && <p className="text-xs text-sub">{note}</p>}
+      <div className="flex items-center gap-2 sm:ml-auto">
+        <Button variant="ghost" size="md" type="button" onClick={onReset} disabled={!dirty}>Reset</Button>
+        <Button variant="primary" size="md" type="button" onClick={onApply} disabled={!dirty}>{applyLabel}</Button>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Empty state ----------
+
 export function EmptyState({ icon: Icon, title, message, action }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-white px-6 py-16 text-center">

@@ -3,95 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/propwise/ui";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import {
-  Calculator, Wallet, TrendingUp, Wrench, ChevronDown,
-  Plus, FolderOpen, Save, Download, Settings, Info, X, Pencil,
-} from "lucide-react";
+import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X } from "lucide-react";
 import Logo from "@/components/propwise/Logo";
 import { useMobileTools } from "@/components/propwise/MobileTools";
+import { MODULES, GROUPS, moduleList, TOOL_ACTIONS } from "@/lib/modules";
 
-const MENUS = [
-  {
-    key: "affordability", label: "Affordability", icon: Calculator, route: "/analysis/affordability",
-    sections: [
-      { heading: "Property & Loan", items: [
-        { label: "Property Details", anchor: "aff-inputs" },
-        { label: "Financial Details", anchor: "aff-inputs" },
-        { label: "Loan Details", anchor: "aff-inputs" },
-      ]},
-      { heading: "Analysis", items: [
-        { label: "Affordability Analysis", anchor: "aff-funding" },
-        { label: "Monthly Cost", anchor: "aff-monthly" },
-        { label: "Loan Payoff", anchor: "aff-loanpayoff" },
-        { label: "Future Property Value", anchor: "aff-future" },
-      ]},
-      { heading: "Decision", items: [
-        { label: "Financial Assessment", anchor: "aff-assessment" },
-        { label: "Key Considerations", anchor: "aff-considerations" },
-      ]},
-    ],
-  },
-  {
-    key: "costs", label: "Property Costs", icon: Wallet, route: "/analysis/property-costs",
-    sections: [
-      { heading: "Costs", items: [
-        { label: "Monthly Costs", anchor: "costs-monthly" },
-        { label: "Annual Costs", anchor: "costs-annual" },
-        { label: "One-Time Costs", anchor: "costs-onetime" },
-      ]},
-      { heading: "Summary", items: [
-        { label: "Total Monthly Cost", anchor: "costs-summary" },
-        { label: "Total Annual Cost", anchor: "costs-summary" },
-        { label: "Initial Cash Requirement", anchor: "costs-summary" },
-      ]},
-      { heading: "Analysis", items: [
-        { label: "Cost Breakdown", anchor: "costs-summary" },
-        { label: "Ownership Cost Summary", anchor: "costs-summary" },
-      ]},
-    ],
-  },
-  {
-    key: "investment", label: "Investment", icon: TrendingUp, route: "/analysis/investment",
-    sections: [
-      { heading: "Buyer Analysis", items: [
-        { label: "Buyer Profile", invSub: "profile", anchor: "inv-buyerprofile" },
-        { label: "Financial Commitment", invSub: "profile", anchor: "inv-buyerprofile" },
-        { label: "Investment Horizon", invSub: "profile", anchor: "inv-buyerprofile" },
-      ]},
-      { heading: "Rental Analysis", items: [
-        { label: "Rental Income", invSub: "rental", anchor: "inv-rental" },
-        { label: "Rental Yield", invSub: "rental", anchor: "inv-rental" },
-        { label: "Rental Costs", invSub: "rental", anchor: "inv-rental" },
-        { label: "Net Rental Benefit", invSub: "rental", anchor: "inv-rentalbenefit" },
-      ]},
-      { heading: "Long-Term", items: [
-        { label: "Property Value Projection", invSub: "longterm", anchor: "inv-yearly" },
-        { label: "Equity Growth", invSub: "longterm", anchor: "inv-yearly" },
-        { label: "Yearly Investment Analysis", invSub: "longterm", anchor: "inv-yearly" },
-      ]},
-      { heading: "Comparison", items: [
-        { label: "Scenario Comparison", invSub: "longterm", anchor: "inv-compare" },
-        { label: "Property Comparison", invSub: "longterm", anchor: "inv-compare" },
-      ]},
-    ],
-  },
-  {
-    key: "tools", label: "Tools", icon: Wrench,
-    sections: [
-      { heading: "Analysis", items: [
-        { label: "New Analysis", action: "new", icon: Plus },
-        { label: "Saved Analyses", action: "saved", icon: FolderOpen },
-      ]},
-      { heading: "Actions", items: [
-        { label: "Save Analysis", action: "save", icon: Save },
-        { label: "Export Report", action: "export", icon: Download },
-      ]},
-      { heading: "Application", items: [
-        { label: "Settings", action: "settings", icon: Settings },
-        { label: "Help & Information", action: "help", icon: Info },
-      ]},
-    ],
-  },
+const GROUP_MENUS = [
+  { key: "affordability", label: "Affordability", icon: Calculator },
+  { key: "costs", label: "Property Costs", icon: Wallet },
+  { key: "investment", label: "Investment", icon: TrendingUp },
 ];
 
 export default function PropWiseHeader() {
@@ -105,37 +25,28 @@ export default function PropWiseHeader() {
   const [renameVal, setRenameVal] = useState(analysis.inputs.title || "");
   const navRef = useRef(null);
 
-  const activeTab = location.pathname.startsWith("/analysis/affordability") ? "affordability"
+  const currentGroup = location.pathname.startsWith("/analysis/affordability") ? "affordability"
     : location.pathname.startsWith("/analysis/property-costs") ? "costs"
     : location.pathname.startsWith("/analysis/investment") ? "investment"
     : location.pathname.startsWith("/tools") ? "tools" : null;
+  const currentModule = new URLSearchParams(location.search).get("m");
 
   useEffect(() => {
-    const onClick = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) setOpenMenu(null);
-    };
+    const onClick = (e) => { if (navRef.current && !navRef.current.contains(e.target)) setOpenMenu(null); };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
-
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") { setOpenMenu(null); }
-    };
+    const onKey = (e) => { if (e.key === "Escape") setOpenMenu(null); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const go = (menu, item) => {
-    setOpenMenu(null);
-    const search = item.invSub ? `?sub=${item.invSub}` : "";
-    const hash = item.anchor ? `#${item.anchor}` : "";
-    navigate(`${menu.route}${search}${hash}`);
-  };
+  const goModule = (mod) => { setOpenMenu(null); navigate(`${mod.route}?m=${mod.key}`); };
 
   const handleAction = (item) => {
     setOpenMenu(null);
-    switch (item.action) {
+    switch (item.key) {
       case "new": analysis.requestNew(); break;
       case "save": analysis.requestSave(); break;
       case "export": analysis.exportReport(); break;
@@ -145,83 +56,104 @@ export default function PropWiseHeader() {
     }
   };
 
-  const handleItem = (menu, item) => {
-    if (item.action) handleAction(item);
-    else go(menu, item);
-  };
-
-  const applyRename = () => {
-    analysis.set("title", renameVal.trim());
-    setShowSettings(false);
-  };
-
   const triggerMenu = (key) => setOpenMenu(openMenu === key ? null : key);
+  const applyRename = () => { analysis.set("title", renameVal.trim()); setShowSettings(false); };
 
-  const renderDropdown = (menu, idx) => (
-    <div
-      className={cn(
-        "absolute top-full mt-1.5 w-64 rounded-[10px] border border-line bg-white p-2 z-50",
-        "shadow-[0_8px_24px_rgba(24,35,58,0.10)]",
-        idx >= MENUS.length - 2 ? "right-0" : "left-0",
-        openMenu === menu.key ? "block" : "hidden"
-      )}
-    >
-      {menu.sections.map((s, i) => (
-        <div key={s.heading}>
-          {i > 0 && <div className="my-1.5 h-px bg-line" />}
-          <div className="px-2 pt-1.5 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sub">{s.heading}</div>
-          {s.items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.label}
-                onClick={() => handleItem(menu, item)}
-                className="group flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#E8F5F1] hover:text-jade"
-              >
-                {Icon ? <Icon className="h-4 w-4 text-jade" /> : <span className="h-4 w-4" />}
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      ))}
+  const renderModuleDropdown = (groupKey, rightAlign) => {
+    const group = GROUPS[groupKey];
+    const list = moduleList(groupKey);
+    return (
+      <div className={cn(
+        "absolute top-full mt-1.5 w-72 rounded-[10px] border border-line bg-white p-2 z-50 shadow-[0_8px_24px_rgba(24,35,58,0.10)]",
+        rightAlign ? "right-0" : "left-0",
+        openMenu === groupKey ? "block" : "hidden"
+      )}>
+        <div className="px-2 pt-1.5 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-sub">{group.label} — {group.tagline}</div>
+        {list.map((m) => {
+          const Icon = m.icon;
+          const isActive = currentGroup === groupKey && currentModule === m.key;
+          return (
+            <button
+              key={m.key}
+              onClick={() => goModule(m)}
+              className={cn(
+                "group flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-[#E8F5F1]",
+                isActive && "bg-[#EEF1F6]"
+              )}
+            >
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-jade" />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-ink">{m.label}</span>
+                <span className="block text-xs text-sub">{m.desc}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderToolsDropdown = (rightAlign) => (
+    <div className={cn(
+      "absolute top-full mt-1.5 w-72 rounded-[10px] border border-line bg-white p-2 z-50 shadow-[0_8px_24px_rgba(24,35,58,0.10)]",
+      rightAlign ? "right-0" : "left-0",
+      openMenu === "tools" ? "block" : "hidden"
+    )}>
+      <div className="px-2 pt-1.5 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-sub">Tools — Manage my analyses</div>
+      {TOOL_ACTIONS.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button
+            key={item.key}
+            onClick={() => handleAction(item)}
+            className="group flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-[#E8F5F1]"
+          >
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-jade" />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-ink">{item.label}</span>
+              <span className="block text-xs text-sub">{item.desc}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
+
+  const desktopMenus = [
+    ...GROUP_MENUS.map((g) => ({ ...g, type: "module" })),
+    { key: "tools", label: "Tools", icon: Wrench, type: "tools" },
+  ];
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:h-[72px]">
-        {/* Logo */}
         <button onClick={() => navigate("/")} className="flex items-center text-left" aria-label="PropWise home">
           <Logo size={32} showTagline />
         </button>
 
-        {/* Desktop nav */}
         <nav ref={navRef} className="ml-auto hidden items-center gap-1 md:flex relative">
-          {MENUS.map((menu, idx) => {
+          {desktopMenus.map((menu, idx) => {
             const isOpen = openMenu === menu.key;
-            const isActive = activeTab === menu.key;
+            const isActive = menu.type === "tools" ? location.pathname.startsWith("/tools") : currentGroup === menu.key;
+            const rightAlign = idx >= desktopMenus.length - 2;
             return (
               <div key={menu.key} className="relative">
                 <button
                   onClick={() => triggerMenu(menu.key)}
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium transition",
-                    isOpen || isActive
-                      ? "bg-[#EEF1F6] text-ink"
-                      : "text-steel hover:bg-[#E8F5F1] hover:text-jade"
+                    isOpen || isActive ? "bg-[#EEF1F6] text-ink" : "text-steel hover:bg-[#E8F5F1] hover:text-jade"
                   )}
                 >
                   <span>{menu.label}</span>
                   <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
                 </button>
-                {renderDropdown(menu, idx)}
+                {menu.type === "tools" ? renderToolsDropdown(rightAlign) : renderModuleDropdown(menu.key, rightAlign)}
               </div>
             );
           })}
         </nav>
 
-        {/* Mobile tools action */}
         <button
           onClick={openTools}
           className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white text-steel active:scale-[0.98] md:hidden"
@@ -231,15 +163,13 @@ export default function PropWiseHeader() {
         </button>
       </div>
 
-      {/* Mobile pill navigation */}
       <nav className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 md:hidden">
-        {MENUS.map((menu) => {
-          const isActive = activeTab === menu.key;
-          const isTools = menu.key === "tools";
+        {GROUP_MENUS.map((menu) => {
+          const isActive = currentGroup === menu.key;
           return (
             <button
               key={menu.key}
-              onClick={() => (isTools ? openTools() : navigate(menu.route))}
+              onClick={() => navigate(GROUPS[menu.key].route)}
               className={cn(
                 "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
                 isActive ? "bg-brand text-white" : "border border-line bg-white text-steel"
@@ -251,49 +181,36 @@ export default function PropWiseHeader() {
         })}
       </nav>
 
-      {/* Settings modal */}
       <Modal open={showSettings} onClose={() => setShowSettings(false)} title="Settings">
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium text-ink">Analysis name</label>
             <div className="mt-1.5 flex h-11 items-center rounded-md border border-line bg-white px-3">
-              <Pencil className="mr-2 h-3.5 w-3.5 text-sub" />
-              <input
-                autoFocus
-                value={renameVal}
-                onChange={(e) => setRenameVal(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && applyRename()}
-                placeholder="Name this analysis"
-                className="w-full bg-transparent text-sm text-ink outline-none"
-              />
+              <input autoFocus value={renameVal} onChange={(e) => setRenameVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && applyRename()} placeholder="Name this analysis" className="w-full bg-transparent text-sm text-ink outline-none" />
             </div>
           </div>
+          <p className="text-xs text-sub">Currency, loan rate, appreciation and projection defaults follow the values you enter in Property & Loan Setup.</p>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" size="md" onClick={() => setShowSettings(false)}>Cancel</Button>
             <Button variant="primary" size="md" onClick={applyRename}>Apply</Button>
           </div>
-          <p className="text-xs text-sub">Rename here or use the title field on the analysis page. Use Tools → Save Analysis to persist.</p>
         </div>
       </Modal>
 
-      {/* Help modal */}
       <Modal open={showHelp} onClose={() => setShowHelp(false)} title="Help & Information" wide>
         <div className="space-y-3 text-sm text-ink">
-          <p className="font-medium">PropWise helps you understand the real cost of buying and holding a property.</p>
+          <p className="font-medium">PropWise is an analysis toolbox — each menu item is a distinct tool that answers one question about a property.</p>
           <div className="space-y-2">
-            <HelpRow icon={Calculator} title="Affordability" text="What can I afford? Enter your property price, savings, income and loan terms." />
-            <HelpRow icon={Wallet} title="Property Costs" text="What will this property cost? Add monthly, annual and one-time costs." />
-            <HelpRow icon={TrendingUp} title="Investment" text="What if I rent it out? See buyer profile, rental yield and long-term projections." />
-            <HelpRow icon={Wrench} title="Tools" text="Manage analyses — start new, save, export and review saved work." />
+            <HelpRow icon={Calculator} title="Affordability" text="Can I handle this? Setup, an affordability check, an EMI simulator, a loan payoff explorer and a future value tool." />
+            <HelpRow icon={Wallet} title="Property Costs" text="What will I spend? A cost builder plus monthly, annual, one-time and ownership breakdown analyzers." />
+            <HelpRow icon={TrendingUp} title="Investment" text="What happens over time? Buyer profile, financial commitment, rental tools, projections, equity and comparisons." />
+            <HelpRow icon={Wrench} title="Tools" text="Manage analyses — new, saved, save, export and settings." />
           </div>
-          <p className="text-xs text-sub">See the note at the bottom of the page for full guidance on estimates and assumptions.</p>
-          <div className="flex justify-end">
-            <Button variant="primary" size="md" onClick={() => setShowHelp(false)}>Got it</Button>
-          </div>
+          <p className="text-xs text-sub">Tools marked with Apply / Reset are experimental — changes only affect your main analysis when you apply them.</p>
+          <div className="flex justify-end"><Button variant="primary" size="md" onClick={() => setShowHelp(false)}>Got it</Button></div>
         </div>
       </Modal>
 
-      {/* New analysis confirmation */}
       <Modal open={analysis.confirmNew} onClose={() => analysis.setConfirmNew(false)} title="Start a new analysis?">
         <p className="text-sm text-sub">Your current unsaved information will be cleared.</p>
         <div className="mt-5 flex justify-end gap-2">
@@ -302,18 +219,10 @@ export default function PropWiseHeader() {
         </div>
       </Modal>
 
-      {/* Save name prompt */}
       <Modal open={analysis.namePrompt} onClose={() => analysis.setNamePrompt(false)} title="Name this analysis">
         <div className="space-y-3">
           <div className="flex h-11 items-center rounded-md border border-line bg-white px-3">
-            <input
-              autoFocus
-              value={analysis.nameVal}
-              onChange={(e) => analysis.setNameVal(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && analysis.confirmNameSave()}
-              placeholder="Analysis name"
-              className="w-full bg-transparent text-sm text-ink outline-none"
-            />
+            <input autoFocus value={analysis.nameVal} onChange={(e) => analysis.setNameVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analysis.confirmNameSave()} placeholder="Analysis name" className="w-full bg-transparent text-sm text-ink outline-none" />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" size="md" onClick={() => analysis.setNamePrompt(false)}>Cancel</Button>
@@ -343,13 +252,8 @@ function Modal({ open, onClose, title, children, wide }) {
 function HelpRow({ icon: Icon, title, text }) {
   return (
     <div className="flex items-start gap-2.5 rounded-lg border border-line p-2.5">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#E8F5F1] text-jade">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <div className="text-sm font-medium text-ink">{title}</div>
-        <div className="text-xs text-sub">{text}</div>
-      </div>
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#E8F5F1] text-jade"><Icon className="h-4 w-4" /></div>
+      <div><div className="text-sm font-medium text-ink">{title}</div><div className="text-xs text-sub">{text}</div></div>
     </div>
   );
 }
