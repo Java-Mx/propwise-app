@@ -122,6 +122,14 @@ export default function PropWiseHeader({
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") { setOpenMenu(null); setMobileOpen(false); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
   const handleItem = (menu, item) => {
     setOpenMenu(null);
     setMobileOpen(false);
@@ -150,7 +158,7 @@ export default function PropWiseHeader({
   const renderDropdown = (menu) => (
     <div
       className={cn(
-        "absolute right-0 mt-2 w-64 rounded-xl border border-line bg-white p-2 shadow-lg z-40",
+        "absolute top-full right-0 mt-1 w-64 rounded-xl border border-line bg-white p-2 shadow-lg z-50",
         openMenu === menu.key ? "block" : "hidden"
       )}
     >
@@ -162,9 +170,9 @@ export default function PropWiseHeader({
             <button
               key={item.label}
               onClick={() => handleItem(menu, item)}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-appbg"
+              className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#E8F5F1]"
             >
-              {item.icon ? <item.icon className="h-4 w-4 text-sub" /> : <span className="h-4 w-4" />}
+              {item.icon ? <item.icon className="h-4 w-4 text-sub group-hover:text-jade" /> : <span className="h-4 w-4" />}
               <span>{item.label}</span>
             </button>
           ))}
@@ -175,7 +183,7 @@ export default function PropWiseHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         {/* Logo */}
         <button onClick={() => onNavigate({ tab: activeTab, anchor: null })} className="flex items-center gap-2.5 text-left">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
@@ -318,11 +326,7 @@ export default function PropWiseHeader({
             <HelpRow icon={TrendingUp} title="Investment" text="What if I rent it out? See buyer profile, rental yield and long-term projections." />
             <HelpRow icon={Wrench} title="Tools" text="Manage analyses — start new, save, export and review saved work." />
           </div>
-          <div className="rounded-lg bg-appbg p-3 text-xs leading-relaxed text-sub">
-            PropWise provides estimates based on user-provided information and assumptions. Property values, rental
-            income, interest rates and future costs may change. This tool is for informational and decision-support
-            purposes and does not constitute financial, investment, tax, legal or lending advice.
-          </div>
+          <p className="text-xs text-sub">See the note at the bottom of the page for full guidance on estimates and assumptions.</p>
           <div className="flex justify-end">
             <Button variant="primary" size="md" onClick={() => setShowHelp(false)}>Got it</Button>
           </div>

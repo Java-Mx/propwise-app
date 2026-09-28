@@ -6,11 +6,11 @@ import { Loader2 } from "lucide-react";
 // ---------- Button ----------
 
 const BTN_VARIANTS = {
-  primary: "bg-brand text-white hover:bg-brand/90 active:bg-brand",
-  secondary: "bg-white text-ink border border-line hover:bg-appbg",
+  primary: "bg-jade text-white hover:bg-[#26786E] active:bg-jade",
+  secondary: "bg-white text-jade border border-jade/30 hover:bg-[#E8F5F1]",
   ghost: "text-sub hover:bg-appbg border border-transparent",
   danger: "bg-err text-white hover:bg-err/90",
-  accent: "bg-jade text-white hover:bg-jade/90",
+  accent: "bg-jade text-white hover:bg-[#26786E]",
 };
 const BTN_SIZES = {
   sm: "h-8 px-3 text-xs gap-1.5",
@@ -56,7 +56,7 @@ export function NumberInput({ value, onChange, prefix = "₹", suffix, placehold
   const display = focused ? (v === "" ? "" : String(v)) : (v === "" || v == null ? "" : indianFormat(v));
   return (
     <div className={cn(
-      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-brand/40 focus-within:ring-2 focus-within:ring-brand/10",
+      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
       compact ? "px-2.5 py-1.5" : "px-3 py-2"
     )}>
       {prefix && <span className="mr-1.5 text-sm text-sub select-none">{prefix}</span>}
@@ -85,7 +85,7 @@ export function PercentInput({ value, onChange, disabled, compact }) {
   const display = focused ? (v === "" ? "" : String(v)) : (v === "" || v == null ? "" : String(v));
   return (
     <div className={cn(
-      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-brand/40 focus-within:ring-2 focus-within:ring-brand/10",
+      "flex items-center rounded-lg border border-line bg-white transition focus-within:border-jade/50 focus-within:ring-2 focus-within:ring-jade/15",
       compact ? "px-2.5 py-1.5" : "px-3 py-2"
     )}>
       <input
@@ -121,7 +121,7 @@ export function Select({ value, onChange, options, placeholder, disabled, render
         onChange(isNum ? Number(v) : v);
       }}
       className={cn(
-        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand/40 focus:ring-2 focus:ring-brand/10",
+        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
         (value === "" || value == null) && "text-sub/60"
       )}
     >
@@ -161,7 +161,7 @@ export function ChoiceInput({ value, onChange, options, suffix = "%", allowCusto
         onChange(Number(e.target.value));
       }}
       className={cn(
-        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand/40 focus:ring-2 focus:ring-brand/10",
+        "h-9 w-full rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-jade/50 focus:ring-2 focus:ring-jade/15",
         !isPreset && "text-sub/60"
       )}
     >
@@ -193,14 +193,15 @@ export function Section({ title, subtitle, children, right, className, id }) {
 
 // ---------- Result card ----------
 
-export function ResultCard({ label, value, sub, emphasis = false }) {
+export function ResultCard({ label, value, sub, emphasis = false, tone }) {
+  const valueColor = tone === "positive" ? "text-jade" : tone === "warning" ? "text-warn" : tone === "error" ? "text-err" : emphasis ? "text-white" : "text-ink";
   return (
     <div className={cn(
       "rounded-xl border p-4",
       emphasis ? "border-brand bg-brand text-white" : "border-line bg-white"
     )}>
       <div className={cn("text-xs font-medium uppercase tracking-wide", emphasis ? "text-white/70" : "text-sub")}>{label}</div>
-      <div className={cn("mt-1 text-xl font-semibold", emphasis ? "text-white" : "text-ink")}>{value}</div>
+      <div className={cn("mt-1 text-xl font-semibold", valueColor)}>{value}</div>
       {sub && <div className={cn("mt-1 text-xs", emphasis ? "text-white/70" : "text-sub")}>{sub}</div>}
     </div>
   );

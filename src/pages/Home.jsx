@@ -6,7 +6,7 @@ import PropertyCostsTab from "@/components/propwise/PropertyCostsTab";
 import InvestmentTab from "@/components/propwise/InvestmentTab";
 import { Button, ConfirmDialog, EmptyState } from "@/components/propwise/ui";
 import PropWiseHeader from "@/components/propwise/PropWiseHeader";
-import { Home as HomeIcon, Calculator, Wallet, TrendingUp, Plus, Pencil } from "lucide-react";
+import { Home as HomeIcon, Calculator, Wallet, TrendingUp, Plus, Pencil, Info } from "lucide-react";
 
 const TABS = [
   { key: "affordability", label: "Affordability", icon: Calculator, question: "Can I afford this property?", sub: "Enter your financial details to estimate the monthly and long-term cost." },
@@ -197,7 +197,7 @@ export default function Home() {
       />
 
       {/* Main */}
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-6">
         {!began ? (
           <EmptyState
             icon={HomeIcon}
@@ -240,12 +240,11 @@ export default function Home() {
       </main>
 
       {/* Disclaimer */}
-      <footer className="mx-auto max-w-6xl px-4 pb-10">
-        <p className="rounded-xl bg-white px-4 py-3 text-xs leading-relaxed text-sub ring-1 ring-line">
-          PropWise provides estimates based on user-provided information and assumptions. Property values, rental
-          income, interest rates and future costs may change. This tool is for informational and decision-support
-          purposes and does not constitute financial, investment, tax, legal or lending advice.
-        </p>
+      <footer className="mx-auto max-w-7xl px-4 pb-10">
+        <div className="flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-xs text-sub ring-1 ring-line">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-sub" />
+          <span>Estimates are based on user-provided assumptions and may differ from actual costs. PropWise is for informational and decision-support purposes only — not financial, investment, tax or legal advice.</span>
+        </div>
       </footer>
 
       {/* Toast */}

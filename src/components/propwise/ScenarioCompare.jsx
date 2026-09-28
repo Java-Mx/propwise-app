@@ -28,7 +28,7 @@ export default function ScenarioCompare({ inputs, set }) {
 
   return (
     <Section id="inv-compare" title="Scenario Comparison" subtitle="Compare up to 3 property scenarios side by side." right={
-      <Button variant="secondary" size="sm" icon={Plus} onClick={addScenario} disabled={scenarios.length >= 3}>Add Scenario</Button>
+      <Button variant="primary" size="sm" icon={Plus} onClick={addScenario} disabled={scenarios.length >= 3}>Add Scenario</Button>
     }>
       {scenarios.length === 0 ? (
         <div className="rounded-lg border border-dashed border-line bg-appbg px-4 py-10 text-center">

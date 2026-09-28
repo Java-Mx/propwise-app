@@ -94,7 +94,7 @@ function RentalAnalysis({ inputs, set, r }) {
             <ResultCard label="Gross Rental Yield" value={formatPct(r.grossYield)} />
             <ResultCard label="Net Annual Rental" value={formatCompact(r.netAnnualRental)} />
             <ResultCard label="Net Rental Yield" value={formatPct(r.netYield)} />
-            <ResultCard label="Net Monthly Benefit" value={formatCompact(r.netMonthlyRentalBenefit)} />
+            <ResultCard label="Net Monthly Benefit" value={formatCompact(r.netMonthlyRentalBenefit)} tone="positive" />
             <ResultCard label="Net Monthly Outflow" value={formatCompact(r.netMonthlyOutflow)} emphasis />
           </div>
 

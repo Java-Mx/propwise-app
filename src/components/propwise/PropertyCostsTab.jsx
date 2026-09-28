@@ -86,7 +86,7 @@ function CostSection({ id, title, section, categories, costs, onAdd, onUpdate, o
       id={id}
       title={title}
       subtitle={`Add the ${title.toLowerCase()} that apply to your purchase.`}
-      right={<Button variant="secondary" size="sm" icon={Plus} onClick={onAdd}>Add Cost</Button>}
+      right={<Button variant="primary" size="sm" icon={Plus} onClick={onAdd}>Add Cost</Button>}
     >
       {items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-line bg-appbg px-4 py-8 text-center text-sm text-sub">
