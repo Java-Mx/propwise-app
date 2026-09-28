@@ -34,6 +34,23 @@
     --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    /* PropWise palette — light values (CSS-variable driven so dark mode can override) */
+    --pw-brand: 221 41% 16%;
+    --pw-steel: 216 20% 40%;
+    --pw-jade: 173 50% 37%;
+    --pw-ok: 164 49% 36%;
+    --pw-warn: 36 59% 48%;
+    --pw-err: 0 40% 54%;
+    --pw-pagebg: 214 41% 97%;
+    --pw-appbg: 220 25% 97%;
+    --pw-inputbg: 0 0% 100%;
+    --pw-jadebg: 163 45% 94%;
+    --pw-navactive: 219 27% 95%;
+    --pw-ink: 221 38% 15%;
+    --pw-sub: 216 15% 52%;
+    --pw-line: 212 28% 90%;
+    --pw-errbg: 0 60% 95%;
+    --pw-warnbg: 38 70% 95%;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 221 41% 16%;
@@ -45,25 +62,47 @@
   }
 
   .dark {
-    --background: 221 41% 10%;
-    --foreground: 220 32% 97%;
-    --card: 221 41% 13%;
-    --card-foreground: 220 32% 97%;
-    --popover: 221 41% 13%;
-    --popover-foreground: 220 32% 97%;
-    --primary: 173 50% 45%;
-    --primary-foreground: 221 41% 10%;
-    --secondary: 221 30% 25%;
-    --secondary-foreground: 220 32% 97%;
-    --muted: 221 30% 20%;
-    --muted-foreground: 215 15% 65%;
-    --accent: 173 50% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 40% 54%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 221 30% 22%;
-    --input: 221 30% 22%;
-    --ring: 173 50% 45%;
+    --background: 212 36% 9%;
+    --foreground: 210 33% 97%;
+    --card: 211 34% 14%;
+    --card-foreground: 210 33% 97%;
+    --popover: 211 34% 14%;
+    --popover-foreground: 210 33% 97%;
+    --primary: 171 40% 48%;
+    --primary-foreground: 212 36% 9%;
+    --secondary: 211 26% 23%;
+    --secondary-foreground: 210 33% 97%;
+    --muted: 211 32% 17%;
+    --muted-foreground: 211 22% 74%;
+    --accent: 171 40% 48%;
+    --accent-foreground: 212 36% 9%;
+    --destructive: 0 52% 65%;
+    --destructive-foreground: 210 33% 97%;
+    --border: 211 26% 23%;
+    --input: 212 34% 12%;
+    --ring: 171 40% 48%;
+    --chart-1: 213 43% 66%;
+    --chart-2: 171 40% 48%;
+    --chart-3: 211 22% 74%;
+    --chart-4: 37 64% 57%;
+    --chart-5: 0 52% 65%;
+    /* PropWise palette — dark values */
+    --pw-brand: 211 32% 17%;
+    --pw-steel: 212 13% 55%;
+    --pw-jade: 171 40% 48%;
+    --pw-ok: 152 45% 55%;
+    --pw-warn: 37 64% 57%;
+    --pw-err: 0 52% 65%;
+    --pw-pagebg: 212 36% 9%;
+    --pw-appbg: 212 34% 12%;
+    --pw-inputbg: 212 34% 12%;
+    --pw-jadebg: 171 38% 15%;
+    --pw-navactive: 211 32% 17%;
+    --pw-ink: 210 33% 97%;
+    --pw-sub: 211 22% 74%;
+    --pw-line: 211 26% 23%;
+    --pw-errbg: 0 29% 18%;
+    --pw-warnbg: 37 41% 16%;
   }
 }
 
@@ -88,3 +127,22 @@
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+/* Dark-mode surface overrides for literal utility classes used across the app.
+   These keep components unchanged while making surfaces, tints and backdrops
+   theme-aware. Variable-driven tokens (bg-pagebg, text-ink, border-line, bg-jade,
+   bg-appbg, bg-inputbg, bg-jadebg, bg-navactive, text-sub, text-steel, etc.) switch
+   automatically via the --pw-* variables defined above. */
+.dark .bg-white { background-color: hsl(var(--card)); }
+.dark .bg-black\/40, .dark .bg-black\/30 { background-color: rgba(0, 0, 0, 0.55); }
+.dark .bg-\[\#E8F5F1\], .dark .hover\:bg-\[\#E8F5F1\]:hover { background-color: hsl(var(--pw-jadebg)); }
+.dark .bg-\[\#F3FAF8\] { background-color: hsl(var(--pw-jadebg)); }
+.dark .bg-\[\#26776E\], .dark .hover\:bg-\[\#26776E\]:hover { background-color: hsl(var(--pw-jade)); }
+.dark .bg-\[\#EEF1F6\] { background-color: hsl(var(--pw-navactive)); }
+.dark .border-\[\#B9DED5\] { border-color: hsl(var(--pw-line)); }
+.dark .bg-\[\#FBECEC\] { background-color: hsl(var(--pw-errbg)); }
+.dark .bg-\[\#FFF6E5\] { background-color: hsl(var(--pw-warnbg)); }
+.dark .text-\[\#52627A\] { color: hsl(var(--pw-sub)); }

@@ -1,0 +1,71 @@
+{
+  "name": "Source",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Interest Rates",
+        "Property Values",
+        "Rental Market",
+        "Taxes & Fees",
+        "Economic Assumptions",
+        "General References"
+      ],
+      "default": "General References"
+    },
+    "url": {
+      "type": "string",
+      "default": ""
+    },
+    "description": {
+      "type": "string",
+      "default": ""
+    },
+    "data_used": {
+      "type": "string",
+      "default": ""
+    },
+    "notes": {
+      "type": "string",
+      "default": ""
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Official",
+        "Verified",
+        "User Provided",
+        "Reference",
+        "Assumption"
+      ],
+      "default": "Reference"
+    },
+    "last_checked": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

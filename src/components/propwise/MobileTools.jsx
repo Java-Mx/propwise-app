@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { Plus, FolderOpen, Save, Download, Settings, X } from "lucide-react";
+import { Plus, FolderOpen, Save, Download, Settings, ShieldCheck, Sun, Moon, Monitor, X } from "lucide-react";
+import { useTheme } from "@/lib/theme";
 
 const Ctx = createContext(null);
 export const useMobileTools = () => useContext(Ctx);
@@ -24,12 +25,14 @@ const OPTIONS = [
   { label: "Saved Analyses", icon: FolderOpen, action: "saved" },
   { label: "Save Analysis", icon: Save, action: "save" },
   { label: "Export Report", icon: Download, action: "export" },
+  { label: "Trusted Sources", icon: ShieldCheck, action: "sources" },
   { label: "Settings", icon: Settings, action: "settings" },
 ];
 
 function ToolsSheet({ open, onClose }) {
   const navigate = useNavigate();
   const analysis = useAnalysis();
+  const { theme, setTheme } = useTheme();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState("");
 
@@ -42,6 +45,7 @@ function ToolsSheet({ open, onClose }) {
       case "save": analysis.requestSave(); close(); break;
       case "export": analysis.exportReport(); close(); break;
       case "saved": navigate("/tools/saved"); close(); break;
+      case "sources": navigate("/tools/sources"); close(); break;
       case "settings": setName(analysis.inputs.title || ""); setRenaming(true); break;
       default: break;
     }
@@ -52,6 +56,28 @@ function ToolsSheet({ open, onClose }) {
       <div className="absolute inset-0 bg-black/30" onClick={close} />
       <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-7 shadow-[0_-10px_30px_rgba(24,35,58,0.12)]">
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line" />
+        <div className="mb-3 grid grid-cols-3 gap-2 px-1">
+          {[
+            { key: "light", label: "Light", icon: Sun },
+            { key: "dark", label: "Dark", icon: Moon },
+            { key: "system", label: "System", icon: Monitor },
+          ].map((opt) => {
+            const Icon = opt.icon;
+            const active = theme === opt.key;
+            return (
+              <button
+                key={opt.key}
+                onClick={() => setTheme(opt.key)}
+                className={cn(
+                  "flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-medium transition active:scale-[0.98]",
+                  active ? "border-jade bg-jadebg text-jade" : "border-line bg-white text-steel"
+                )}
+              >
+                <Icon className="h-4 w-4" /> {opt.label}
+              </button>
+            );
+          })}
+        </div>
         <div className="mb-1 flex items-center justify-between px-1">
           <h3 className="text-base font-semibold text-ink">Tools</h3>
           <button onClick={close} className="rounded-lg p-2 text-sub hover:bg-appbg" aria-label="Close">

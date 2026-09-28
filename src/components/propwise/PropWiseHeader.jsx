@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/propwise/ui";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X } from "lucide-react";
+import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X, Sun, Moon, Monitor } from "lucide-react";
 import Logo from "@/components/propwise/Logo";
 import { useMobileTools } from "@/components/propwise/MobileTools";
+import { useTheme } from "@/lib/theme";
 import { MODULES, GROUPS, moduleList, TOOL_ACTIONS } from "@/lib/modules";
 
 const GROUP_MENUS = [
@@ -18,6 +19,7 @@ export default function PropWiseHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const analysis = useAnalysis();
+  const { theme, setTheme } = useTheme();
   const { openTools } = useMobileTools();
   const [openMenu, setOpenMenu] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -51,6 +53,7 @@ export default function PropWiseHeader() {
       case "save": analysis.requestSave(); break;
       case "export": analysis.exportReport(); break;
       case "saved": navigate("/tools/saved"); break;
+      case "sources": navigate("/tools/sources"); break;
       case "settings": setRenameVal(analysis.inputs.title || ""); setShowSettings(true); break;
       case "help": setShowHelp(true); break;
     }
@@ -190,6 +193,32 @@ export default function PropWiseHeader() {
             </div>
           </div>
           <p className="text-xs text-sub">Currency, loan rate, appreciation and projection defaults follow the values you enter in Property & Loan Setup.</p>
+          <div>
+            <label className="text-sm font-medium text-ink">Appearance</label>
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
+              {[
+                { key: "light", label: "Light", icon: Sun },
+                { key: "dark", label: "Dark", icon: Moon },
+                { key: "system", label: "System", icon: Monitor },
+              ].map((opt) => {
+                const Icon = opt.icon;
+                const active = theme === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => setTheme(opt.key)}
+                    className={cn(
+                      "flex h-10 items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition",
+                      active ? "border-jade bg-jadebg text-jade" : "border-line bg-white text-steel hover:bg-jadebg hover:text-jade"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" /> {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1.5 text-xs text-sub">System follows your device. Switching is visual only — your analysis is not affected.</p>
+          </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" size="md" onClick={() => setShowSettings(false)}>Cancel</Button>
             <Button variant="primary" size="md" onClick={applyRename}>Apply</Button>

@@ -51,6 +51,7 @@ export const TOOL_ACTIONS = [
   { key: "saved", label: "Saved Analyses", desc: "Open, duplicate, rename or delete.", icon: FolderOpen },
   { key: "save", label: "Save Analysis", desc: "Save the current state.", icon: Save },
   { key: "export", label: "Export Report", desc: "Download a full analysis report.", icon: Download },
-  { key: "settings", label: "Settings", desc: "Name and defaults.", icon: SettingsIcon },
+  { key: "sources", label: "Trusted Sources", desc: "Where assumptions and data come from.", icon: ShieldCheck },
+  { key: "settings", label: "Settings", desc: "Name, defaults and appearance.", icon: SettingsIcon },
   { key: "help", label: "Help & Information", desc: "How PropWise works.", icon: Info },
 ];

@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Landing from '@/pages/Landing';
 import Analysis from '@/pages/Analysis';
 import SavedAnalyses from '@/pages/SavedAnalyses';
+import Sources from '@/pages/Sources';
 import { AnalysisProvider } from '@/lib/AnalysisContext';
 import { MobileToolsProvider } from '@/components/propwise/MobileTools';
 // Add page imports here
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/analysis/property-costs" element={<Analysis />} />
         <Route path="/analysis/investment" element={<Analysis />} />
         <Route path="/tools/saved" element={<SavedAnalyses />} />
+        <Route path="/tools/sources" element={<Sources />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       </MobileToolsProvider>
