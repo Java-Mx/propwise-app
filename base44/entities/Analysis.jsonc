@@ -1,0 +1,147 @@
+{
+  "name": "Analysis",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "default": "My Property Analysis"
+    },
+    "property_price": {
+      "type": "number",
+      "default": 0
+    },
+    "amount_saved": {
+      "type": "number",
+      "default": 0
+    },
+    "home_loan_percentage": {
+      "type": "number",
+      "default": 70
+    },
+    "monthly_income": {
+      "type": "number",
+      "default": 0
+    },
+    "existing_emi": {
+      "type": "number",
+      "default": 0
+    },
+    "interest_rate": {
+      "type": "number",
+      "default": 8.5
+    },
+    "loan_tenure_years": {
+      "type": "number",
+      "default": 20
+    },
+    "monthly_maintenance": {
+      "type": "number",
+      "default": 0
+    },
+    "society_charges": {
+      "type": "number",
+      "default": 0
+    },
+    "parking": {
+      "type": "number",
+      "default": 0
+    },
+    "property_management": {
+      "type": "number",
+      "default": 0
+    },
+    "insurance_monthly": {
+      "type": "number",
+      "default": 0
+    },
+    "other_monthly": {
+      "type": "number",
+      "default": 0
+    },
+    "property_tax": {
+      "type": "number",
+      "default": 0
+    },
+    "insurance_annual": {
+      "type": "number",
+      "default": 0
+    },
+    "repairs": {
+      "type": "number",
+      "default": 0
+    },
+    "maintenance_reserve": {
+      "type": "number",
+      "default": 0
+    },
+    "other_annual": {
+      "type": "number",
+      "default": 0
+    },
+    "registration": {
+      "type": "number",
+      "default": 0
+    },
+    "stamp_duty": {
+      "type": "number",
+      "default": 0
+    },
+    "brokerage": {
+      "type": "number",
+      "default": 0
+    },
+    "furnishing": {
+      "type": "number",
+      "default": 0
+    },
+    "moving": {
+      "type": "number",
+      "default": 0
+    },
+    "other_one_time": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_rent": {
+      "type": "number",
+      "default": 0
+    },
+    "annual_rent_increase": {
+      "type": "number",
+      "default": 4
+    },
+    "vacancy_rate": {
+      "type": "number",
+      "default": 5
+    },
+    "annual_rental_maintenance": {
+      "type": "number",
+      "default": 0
+    },
+    "annual_appreciation": {
+      "type": "number",
+      "default": 5
+    },
+    "projection_years": {
+      "type": "number",
+      "default": 20
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
