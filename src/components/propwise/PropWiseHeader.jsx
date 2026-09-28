@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/propwise/ui";
 import { useAnalysis } from "@/lib/AnalysisContext";
 import {
-  Home as HomeIcon, Calculator, Wallet, TrendingUp, Wrench, ChevronDown,
+  Calculator, Wallet, TrendingUp, Wrench, ChevronDown,
   Plus, FolderOpen, Save, Download, Settings, Info, X, Pencil,
 } from "lucide-react";
+import Logo from "@/components/propwise/Logo";
 
 const MENUS = [
   {
@@ -193,16 +194,10 @@ export default function PropWiseHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-3 px-4">
         {/* Logo */}
-        <button onClick={() => navigate("/")} className="flex items-center gap-2.5 text-left">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
-            <HomeIcon className="h-5 w-5" />
-          </div>
-          <div className="leading-tight">
-            <div className="text-base font-semibold tracking-tight text-ink">PropWise</div>
-            <div className="hidden text-[11px] text-sub sm:block">Understand the real cost of your next home.</div>
-          </div>
+        <button onClick={() => navigate("/")} className="flex items-center text-left" aria-label="PropWise home">
+          <Logo size={36} showTagline />
         </button>
 
         {/* Desktop nav */}
