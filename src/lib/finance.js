@@ -1,79 +1,77 @@
 // PropWise — financial calculation engine
-// All calculations are transparent and based on user-provided assumptions.
+// Transparent estimates based on user-provided assumptions.
 
+const num = (v) => (v === "" || v == null || isNaN(+v)) ? 0 : +v;
+export { num };
+
+// All fields start empty — no demo or preloaded values.
 export const DEFAULT_INPUTS = {
-  title: "My Property Analysis",
-  property_price: 30000000,
-  amount_saved: 10000000,
-  home_loan_percentage: 70,
-  monthly_income: 500000,
-  existing_emi: 30000,
-  interest_rate: 8.5,
-  loan_tenure_years: 20,
-  // monthly cost breakdown (Tab 2)
-  monthly_maintenance: 12000, // maintenance fee
-  society_charges: 0,
-  parking: 0,
-  property_management: 0,
-  insurance_monthly: 0,
-  other_monthly: 5000,
-  // annual costs (Tab 2)
-  property_tax: 0,
-  insurance_annual: 0,
-  repairs: 0,
-  maintenance_reserve: 0,
-  other_annual: 0,
-  // one-time costs (Tab 2)
-  registration: 0,
-  stamp_duty: 0,
-  brokerage: 0,
-  furnishing: 0,
-  moving: 0,
-  other_one_time: 0,
-  // rental (Tab 3)
-  monthly_rent: 90000,
-  annual_rent_increase: 4,
-  vacancy_rate: 5,
-  annual_rental_maintenance: 20000,
-  // projection
-  annual_appreciation: 5,
-  projection_years: 20,
+  title: "",
+  property_type: "Apartment",
+  property_price: "",
+  amount_saved: "",
+  home_loan_percentage: "",
+  monthly_income: "",
+  existing_emi: "",
+  interest_rate: "",
+  loan_tenure_years: "",
+  costs: [],
+  monthly_rent: "",
+  annual_rent_increase: "",
+  vacancy_rate: "",
+  annual_rental_maintenance: "",
+  other_rental_costs: "",
+  annual_appreciation: "",
+  projection_years: "",
+  scenarios: [],
 };
 
-export const DEMO_INPUTS = { ...DEFAULT_INPUTS };
+// ---------- Option lists ----------
 
 export const TENURE_OPTIONS = [5, 10, 15, 20, 25, 30];
-export const PROJECTION_OPTIONS = [5, 10, 15, 20];
+export const PROJECTION_OPTIONS = [5, 10, 15, 20, 25];
+export const INTEREST_OPTIONS = [6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+export const LOAN_PCT_OPTIONS = [50, 60, 70, 75, 80, 85, 90];
+export const APPRECIATION_OPTIONS = [3, 4, 5, 6, 7, 8];
+export const RENT_GROWTH_OPTIONS = [2, 3, 4, 5, 6, 7];
+export const VACANCY_OPTIONS = [0, 5, 10, 15, 20];
+export const PROPERTY_TYPES = ["Apartment", "Villa", "Independent House", "Row House", "Plot", "Other"];
+
+export const FREQUENCIES = ["Monthly", "Quarterly", "Half-Yearly", "Yearly", "One-Time"];
+
+export const MONTHLY_CATEGORIES = ["Maintenance", "Society Charges", "Parking", "Security", "Property Management", "Insurance", "Other"];
+export const ANNUAL_CATEGORIES = ["Property Tax", "Insurance", "Repairs", "Maintenance Reserve", "Society Charges", "Other"];
+export const ONETIME_CATEGORIES = ["Stamp Duty", "Registration", "Brokerage", "Interior", "Furnishing", "Moving", "Legal", "Other"];
 
 // ---------- Formatting ----------
 
-export function indianFormat(num) {
-  const n = Math.round(Math.abs(num || 0));
-  const str = String(n);
+export function indianFormat(n) {
+  const v = Math.round(Math.abs(n || 0));
+  const str = String(v);
   if (str.length <= 3) return str;
   const last3 = str.slice(-3);
   const rest = str.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",");
   return rest + "," + last3;
 }
 
-export function formatINR(num) {
-  if (num == null || isNaN(num)) return "₹0";
-  const sign = num < 0 ? "-" : "";
-  return sign + "₹" + indianFormat(num);
+export function formatINR(n) {
+  if (n == null || isNaN(n)) return "₹0";
+  const sign = n < 0 ? "-" : "";
+  return sign + "₹" + indianFormat(n);
 }
 
-export function formatCompact(num) {
-  if (num == null || isNaN(num)) return "₹0";
-  const abs = Math.abs(num);
-  const sign = num < 0 ? "-" : "";
+export function formatCompact(n) {
+  if (n == null || isNaN(n) || n === 0) return "₹0";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
   if (abs >= 10000000) return sign + "₹" + round2(abs / 10000000) + " Cr";
   if (abs >= 100000) return sign + "₹" + round2(abs / 100000) + " L";
   return sign + "₹" + indianFormat(abs);
 }
 
-export function formatPct(num) {
-  if (num == null || isNaN(num)) return "0%";
-  return round1(num) + "%";
+export function formatPct(n) {
+  if (n == null || isNaN(n)) return "0%";
+  return round1(n) + "%";
 }
 
 export function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
@@ -93,23 +91,34 @@ export function futureValue(present, annualRatePct, years) {
   return present * Math.pow(1 + annualRatePct / 100, years);
 }
 
-// ---------- Burden thresholds (configurable, indicative) ----------
+// ---------- Cost normalization ----------
 
-export const BURDEN_THRESHOLDS = {
-  low: 25, // < 25% -> lower
-  moderate: 40, // 25-40% -> moderate
-  high: 55, // 40-55% -> high
-  // >= 55% -> very high
-};
-
-export function burdenLevel(pct) {
-  if (pct < BURDEN_THRESHOLDS.low) return { key: "low", label: "Lower commitment", color: "emerald" };
-  if (pct < BURDEN_THRESHOLDS.moderate) return { key: "moderate", label: "Moderate commitment", color: "amber" };
-  if (pct < BURDEN_THRESHOLDS.high) return { key: "high", label: "High commitment", color: "orange" };
-  return { key: "very_high", label: "Very high commitment", color: "rose" };
+export function monthlyEquiv(amount, frequency) {
+  const a = num(amount);
+  switch (frequency) {
+    case "Monthly": return a;
+    case "Quarterly": return a / 3;
+    case "Half-Yearly": return a / 6;
+    case "Yearly": return a / 12;
+    default: return 0;
+  }
+}
+export function annualEquiv(amount, frequency) {
+  return monthlyEquiv(amount, frequency) * 12;
 }
 
-// ---------- Amortization (yearly) ----------
+// ---------- Burden thresholds (indicative, configurable) ----------
+
+export const BURDEN_THRESHOLDS = { low: 25, moderate: 40, high: 55 };
+
+export function burdenLevel(pct) {
+  if (pct < BURDEN_THRESHOLDS.low) return { key: "low", label: "Lower", color: "#2F8F6B" };
+  if (pct < BURDEN_THRESHOLDS.moderate) return { key: "moderate", label: "Moderate", color: "#C58B32" };
+  if (pct < BURDEN_THRESHOLDS.high) return { key: "high", label: "High", color: "#C58B32" };
+  return { key: "very_high", label: "Very High", color: "#B95C5C" };
+}
+
+// ---------- Amortization ----------
 
 export function buildAmortization(principal, annualRatePct, years) {
   const months = years * 12;
@@ -118,8 +127,7 @@ export function buildAmortization(principal, annualRatePct, years) {
   let balance = principal;
   const rows = [];
   for (let y = 1; y <= years; y++) {
-    let interestPaid = 0;
-    let principalPaid = 0;
+    let interestPaid = 0, principalPaid = 0;
     for (let m = 0; m < 12; m++) {
       if (balance <= 0) break;
       const interest = balance * r;
@@ -129,31 +137,26 @@ export function buildAmortization(principal, annualRatePct, years) {
       balance -= pp;
       if (balance < 0.01) balance = 0;
     }
-    rows.push({ year: y, balance, interestPaid, principalPaid, emiPaid: emi * 12 });
+    rows.push({ year: y, balance: Math.max(balance, 0), interestPaid, principalPaid, emiPaid: emi * 12 });
   }
   return rows;
 }
 
-// ---------- Yearly investment projection ----------
+// ---------- Yearly projection ----------
 
 export function buildYearlyProjection(input) {
   const {
-    price, emi, expectedLoan, interest_rate, loan_tenure_years,
-    monthlyMaintenance, otherMonthly, annual_appreciation,
-    annual_rent_increase, vacancy_rate, annual_rental_maintenance,
-    monthly_rent, projection_years,
+    price, emi, actualLoan, rate, tenure, recurringMonthly,
+    appreciation, rentGrowth, vacancy, rentalCosts, monthlyRent, projection_years,
   } = input;
 
-  const r = interest_rate / 12 / 100;
-  const tenure = loan_tenure_years;
-  const totalMonths = tenure * 12;
-  let balance = expectedLoan;
+  const r = rate / 12 / 100;
+  let balance = actualLoan;
   const rows = [];
   const maxYears = Math.max(projection_years || 20, tenure);
 
   for (let y = 1; y <= maxYears; y++) {
-    let interestPaid = 0;
-    let principalPaid = 0;
+    let interestPaid = 0, principalPaid = 0;
     if (balance > 0) {
       for (let m = 0; m < 12; m++) {
         if (balance <= 0) break;
@@ -165,11 +168,11 @@ export function buildYearlyProjection(input) {
         if (balance < 0.01) balance = 0;
       }
     }
-    const propertyValue = futureValue(price, annual_appreciation, y);
+    const propertyValue = futureValue(price, appreciation, y);
     const annualEmiPaid = y <= tenure ? emi * 12 : 0;
-    const annualMaintenance = (monthlyMaintenance + otherMonthly) * 12;
-    const grossRent = monthly_rent * 12 * Math.pow(1 + annual_rent_increase / 100, y - 1);
-    const annualRentalIncome = Math.max(grossRent * (1 - vacancy_rate / 100) - annual_rental_maintenance, 0);
+    const annualMaintenance = recurringMonthly * 12;
+    const grossRent = monthlyRent * 12 * Math.pow(1 + rentGrowth / 100, y - 1);
+    const annualRentalIncome = Math.max(grossRent * (1 - vacancy / 100) - rentalCosts, 0);
     const annualNetOutflow = annualEmiPaid + annualMaintenance - annualRentalIncome;
     const equity = propertyValue - Math.max(balance, 0);
     rows.push({
@@ -177,7 +180,7 @@ export function buildYearlyProjection(input) {
       propertyValue: Math.round(propertyValue),
       loanBalance: Math.round(Math.max(balance, 0)),
       annualEmiPaid: Math.round(annualEmiPaid),
-      annualMaintenance: Math.round(annualMaintenance),
+      annualPropertyCost: Math.round(annualEmiPaid + annualMaintenance),
       annualRentalIncome: Math.round(annualRentalIncome),
       annualNetOutflow: Math.round(annualNetOutflow),
       equity: Math.round(equity),
@@ -189,150 +192,132 @@ export function buildYearlyProjection(input) {
 // ---------- Master compute ----------
 
 export function computeAll(input) {
-  const price = +input.property_price || 0;
-  const saved = +input.amount_saved || 0;
-  const loanPct = +input.home_loan_percentage || 0;
-  const monthlyIncome = +input.monthly_income || 0;
-  const existingEmi = +input.existing_emi || 0;
-  const rate = +input.interest_rate || 0;
-  const tenure = +input.loan_tenure_years || 0;
+  const price = num(input.property_price);
+  const saved = num(input.amount_saved);
+  const loanPct = num(input.home_loan_percentage);
+  const monthlyIncome = num(input.monthly_income);
+  const existingEmi = num(input.existing_emi);
+  const rate = num(input.interest_rate);
+  const tenure = num(input.loan_tenure_years);
 
-  const expectedLoan = price * loanPct / 100;
-  const downPaymentNeeded = price - expectedLoan;
+  // Funding logic — separate concepts
+  const maxLoanEligibility = price * loanPct / 100;
   const requiredFunding = Math.max(price - saved, 0);
-  const remainingRequired = Math.max(downPaymentNeeded - saved, 0);
-  const surplusAfterDownPayment = Math.max(saved - downPaymentNeeded, 0);
+  let actualLoan = requiredFunding <= 0 ? 0 : Math.min(requiredFunding, maxLoanEligibility);
+  const downPayment = Math.max(price - actualLoan, 0);
+  const surplusSavings = Math.max(saved - downPayment, 0);
+  const fundingGap = requiredFunding > maxLoanEligibility ? requiredFunding - maxLoanEligibility : 0;
+  const maxPurchaseCapacity = saved + maxLoanEligibility;
+  const canCover = maxPurchaseCapacity >= price;
+  const savingsExceedsPrice = saved > price && price > 0;
 
   const months = tenure * 12;
-  const emi = calculateEMI(expectedLoan, rate, months);
+  const emi = calculateEMI(actualLoan, rate, months);
   const totalRepayment = emi * months;
-  const totalInterest = Math.max(totalRepayment - expectedLoan, 0);
+  const totalInterest = Math.max(totalRepayment - actualLoan, 0);
+  const loanToValue = price > 0 ? (actualLoan / price) * 100 : 0;
 
-  const monthlyMaintenance = +input.monthly_maintenance || 0;
-  const otherMonthly = (+input.society_charges || 0) + (+input.parking || 0)
-    + (+input.property_management || 0) + (+input.insurance_monthly || 0) + (+input.other_monthly || 0);
-  const totalMonthlyCost = emi + monthlyMaintenance + otherMonthly;
+  // Costs
+  const costs = Array.isArray(input.costs) ? input.costs : [];
+  const recurringMonthly = costs
+    .filter((c) => c.frequency !== "One-Time")
+    .reduce((s, c) => s + monthlyEquiv(c.amount, c.frequency), 0);
+  const oneTimeTotal = costs
+    .filter((c) => c.frequency === "One-Time")
+    .reduce((s, c) => s + num(c.amount), 0);
 
-  const incomeBurden = monthlyIncome > 0 ? (totalMonthlyCost / monthlyIncome * 100) : 0;
-  const totalBurdenWithExisting = monthlyIncome > 0 ? ((totalMonthlyCost + existingEmi) / monthlyIncome * 100) : 0;
+  const totalMonthlyCost = emi + recurringMonthly;
+  const totalMonthlyCommitment = totalMonthlyCost + existingEmi;
+  const incomeBurden = monthlyIncome > 0 ? (totalMonthlyCost / monthlyIncome) * 100 : 0;
+  const totalCommitmentBurden = monthlyIncome > 0 ? (totalMonthlyCommitment / monthlyIncome) * 100 : 0;
   const level = burdenLevel(incomeBurden);
 
-  const appreciation = +input.annual_appreciation || 0;
+  const estimatedAnnualPropertyCost = totalMonthlyCost * 12;
+  const totalInitialCash = downPayment + oneTimeTotal;
+
+  // Future value
+  const appreciation = num(input.annual_appreciation);
   const fv = (years) => futureValue(price, appreciation, years);
 
-  // rental
-  const monthlyRent = +input.monthly_rent || 0;
+  // Rental
+  const monthlyRent = num(input.monthly_rent);
   const grossAnnualRent = monthlyRent * 12;
-  const vacancy = +input.vacancy_rate || 0;
+  const vacancy = num(input.vacancy_rate);
   const effectiveAnnualRent = grossAnnualRent * (1 - vacancy / 100);
-  const annualRentalMaint = +input.annual_rental_maintenance || 0;
-  const netAnnualRental = effectiveAnnualRent - annualRentalMaint;
+  const rentalMaint = num(input.annual_rental_maintenance);
+  const otherRentalCosts = num(input.other_rental_costs);
+  const rentalCosts = rentalMaint + otherRentalCosts;
+  const netAnnualRental = effectiveAnnualRent - rentalCosts;
   const grossYield = price > 0 ? (grossAnnualRent / price) * 100 : 0;
   const netYield = price > 0 ? (netAnnualRental / price) * 100 : 0;
   const netMonthlyRentalBenefit = netAnnualRental / 12;
   const netMonthlyOutflow = totalMonthlyCost - netMonthlyRentalBenefit;
 
-  // annual + one-time
-  const annualCostTotal = (+input.property_tax || 0) + (+input.insurance_annual || 0)
-    + (+input.repairs || 0) + (+input.maintenance_reserve || 0) + (+input.other_annual || 0);
-  const estimatedAnnualPropertyCost = totalMonthlyCost * 12 + annualCostTotal;
-
-  const oneTimeTotal = (+input.registration || 0) + (+input.stamp_duty || 0)
-    + (+input.brokerage || 0) + (+input.furnishing || 0) + (+input.moving || 0) + (+input.other_one_time || 0);
-  const totalInitialCash = downPaymentNeeded + oneTimeTotal;
-
-  const loanToValue = price > 0 ? (expectedLoan / price) * 100 : 0;
-
-  const amortization = buildAmortization(expectedLoan, rate, tenure);
-
+  const amortization = buildAmortization(actualLoan, rate, tenure);
   const yearly = buildYearlyProjection({
-    price, emi, expectedLoan, interest_rate: rate, loan_tenure_years: tenure,
-    monthlyMaintenance, otherMonthly, annual_appreciation: appreciation,
-    annual_rent_increase: +input.annual_rent_increase || 0,
-    vacancy_rate: vacancy, annual_rental_maintenance: annualRentalMaint,
-    monthly_rent: monthlyRent, projection_years: +input.projection_years || 20,
+    price, emi, actualLoan, rate, tenure, recurringMonthly,
+    appreciation, rentGrowth: num(input.annual_rent_increase),
+    vacancy, rentalCosts, monthlyRent,
+    projection_years: num(input.projection_years) || 20,
   });
 
+  const hasInputs = price > 0;
+
   return {
-    price, saved, loanPct, monthlyIncome, existingEmi, rate, tenure,
-    expectedLoan, downPaymentNeeded, requiredFunding, remainingRequired, surplusAfterDownPayment,
-    emi, totalRepayment, totalInterest,
-    monthlyMaintenance, otherMonthly, totalMonthlyCost,
-    incomeBurden, totalBurdenWithExisting, level,
-    fv,
-    monthlyRent, grossAnnualRent, effectiveAnnualRent, annualRentalMaint,
-    netAnnualRental, grossYield, netYield, netMonthlyRentalBenefit, netMonthlyOutflow,
-    annualCostTotal, estimatedAnnualPropertyCost,
-    oneTimeTotal, totalInitialCash,
-    loanToValue,
-    amortization,
-    yearly,
+    hasInputs, price, saved, loanPct, monthlyIncome, existingEmi, rate, tenure,
+    maxLoanEligibility, requiredFunding, actualLoan, downPayment, surplusSavings,
+    fundingGap, maxPurchaseCapacity, canCover, savingsExceedsPrice,
+    emi, totalRepayment, totalInterest, loanToValue,
+    recurringMonthly, oneTimeTotal, totalMonthlyCost, totalMonthlyCommitment,
+    incomeBurden, totalCommitmentBurden, level,
+    estimatedAnnualPropertyCost, totalInitialCash,
+    appreciation, fv,
+    monthlyRent, grossAnnualRent, effectiveAnnualRent, rentalCosts, netAnnualRental,
+    grossYield, netYield, netMonthlyRentalBenefit, netMonthlyOutflow,
+    amortization, yearly,
   };
 }
 
-// ---------- Suggestion generator (rule-based, transparent) ----------
+// ---------- Suggestion generator ----------
 
 export function generateSuggestions(input, r) {
+  if (!r.hasInputs) return [];
   const out = [];
-  const burden = r.incomeBurden;
   const levelKey = r.level.key;
 
-  if (levelKey === "low") {
-    out.push("The estimated monthly property cost represents a relatively lower share of your current income. Review the income remaining after existing obligations and property costs.");
-  } else if (levelKey === "moderate") {
-    out.push("The estimated monthly property cost represents a moderate share of your income. Ensure your emergency savings and existing obligations remain comfortable.");
-  } else if (levelKey === "high") {
-    out.push("The estimated monthly property cost represents a high share of your current income. Consider a lower-priced property, a higher initial contribution, or a longer loan tenure.");
-  } else {
-    out.push("The estimated monthly property cost represents a very high share of your current income. This may strain your finances — consider a lower-priced property or a much higher initial contribution.");
-  }
+  if (levelKey === "low") out.push("Estimated monthly property cost is a lower share of your income.");
+  else if (levelKey === "moderate") out.push("Estimated monthly property cost is a moderate share of your income.");
+  else if (levelKey === "high") out.push("Estimated monthly property cost is a high share of your income — consider a lower price, higher contribution or longer tenure.");
+  else out.push("Estimated monthly property cost is a very high share of your income — review carefully before proceeding.");
 
-  if (r.surplusAfterDownPayment > 0) {
-    out.push("Your available savings exceed the required down payment, reducing the amount that needs to be financed and giving you a cushion.");
-  } else if (r.remainingRequired > 0) {
-    out.push("Your current savings are lower than the estimated down payment. You may need to arrange additional funds before purchase.");
-  }
+  if (r.surplusSavings > 0) out.push("Your available savings cover the down payment, with " + formatINR(r.surplusSavings) + " remaining.");
+  else if (r.fundingGap > 0) out.push("Your savings and selected loan percentage leave a funding gap of " + formatINR(r.fundingGap) + ".");
 
-  if (r.tenure >= 20) {
-    out.push("A longer loan tenure reduces the monthly EMI but increases the total interest paid over the loan.");
-  } else if (r.tenure <= 10) {
-    out.push("A shorter loan tenure keeps total interest low but increases the monthly EMI.");
-  }
+  if (r.tenure >= 20) out.push("A longer tenure lowers the monthly EMI but increases total interest paid (" + formatCompact(r.totalInterest) + ").");
+  else if (r.tenure > 0 && r.tenure <= 10) out.push("A shorter tenure keeps total interest low but raises the monthly EMI.");
 
-  if (r.totalInterest > r.expectedLoan) {
-    out.push("Total interest paid is expected to exceed the loan principal — typical for long tenures, but worth noting.");
-  }
-
-  if (r.netMonthlyOutflow > 0 && r.monthlyRent > 0) {
-    out.push("If rented out, the rental income offsets part of your monthly cost, leaving a net monthly outflow of " + formatCompact(r.netMonthlyOutflow) + ".");
-  }
+  if (r.monthlyRent > 0) out.push("If rented out, net monthly outflow after rental benefit is " + formatCompact(r.netMonthlyOutflow) + ".");
+  else if (r.actualLoan > 0) out.push("Total loan interest is estimated at " + formatCompact(r.totalInterest) + " over " + r.tenure + " years.");
 
   return out;
 }
 
-// ---------- Scenario comparison ----------
+// ---------- Scenario summary ----------
 
-export function buildScenarios(input) {
-  const price = +input.property_price || 0;
-  const bases = [
-    { label: "Scenario A", factor: 0.8 },
-    { label: "Scenario B", factor: 1.0 },
-    { label: "Scenario C", factor: 1.2 },
-  ];
-  return bases.map((b) => {
-    const scenarioPrice = Math.round(price * b.factor);
-    const sInput = { ...input, property_price: scenarioPrice };
-    const r = computeAll(sInput);
-    return {
-      label: b.label,
-      price: scenarioPrice,
-      requiredInitial: r.downPaymentNeeded,
-      loanAmount: r.expectedLoan,
-      emi: r.emi,
-      monthlyCost: r.totalMonthlyCost,
-      rentalIncome: r.netMonthlyRentalBenefit,
-      netMonthlyOutflow: r.netMonthlyOutflow,
-      valueAfter10: r.fv(10),
-    };
-  });
+export function computeScenarioSummary(s, appreciation) {
+  const price = num(s.property_price);
+  const saved = num(s.amount_saved);
+  const loanPct = num(s.home_loan_percentage);
+  const rate = num(s.interest_rate);
+  const tenure = num(s.loan_tenure_years);
+  const monthlyRent = num(s.monthly_rent);
+  const maxLoan = price * loanPct / 100;
+  const requiredFunding = Math.max(price - saved, 0);
+  const loan = requiredFunding <= 0 ? 0 : Math.min(requiredFunding, maxLoan);
+  const emi = calculateEMI(loan, rate, tenure * 12);
+  const netAnnualRent = monthlyRent * 12 * (1 - 5 / 100);
+  const rentalBenefit = netAnnualRent / 12;
+  const netOutflow = emi - rentalBenefit;
+  const valueAfter10 = futureValue(price, num(appreciation), 10);
+  return { price, loan, emi, monthlyCost: emi, rentalBenefit, netOutflow, valueAfter10, downPayment: Math.max(price - loan, 0) };
 }

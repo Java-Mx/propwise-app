@@ -1,133 +1,131 @@
 import React from "react";
-import { Field, NumberInput, Section, ResultCard, Stat, Divider } from "@/components/propwise/ui";
-import { formatINR, formatCompact } from "@/lib/finance";
+import { Field, NumberInput, Select, Section, ResultCard, Divider, Button, Alert } from "@/components/propwise/ui";
+import {
+  formatINR, formatCompact, FREQUENCIES,
+  MONTHLY_CATEGORIES, ANNUAL_CATEGORIES, ONETIME_CATEGORIES,
+} from "@/lib/finance";
+import { Plus, Trash2, Wallet } from "lucide-react";
 
 export default function PropertyCostsTab({ inputs, set, r }) {
+  const costs = inputs.costs || [];
+
+  const addCost = (section) => {
+    const categoryList = section === "monthly" ? MONTHLY_CATEGORIES : section === "annual" ? ANNUAL_CATEGORIES : ONETIME_CATEGORIES;
+    const frequency = section === "onetime" ? "One-Time" : section === "annual" ? "Yearly" : "Monthly";
+    const item = { id: `c${Date.now()}${Math.random().toString(36).slice(2, 6)}`, section, category: categoryList[0], amount: "", frequency };
+    set("costs", [...costs, item]);
+  };
+  const updateCost = (id, patch) => set("costs", costs.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const removeCost = (id) => set("costs", costs.filter((c) => c.id !== id));
+
+  const has = r.hasInputs;
+
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {/* MONTHLY COSTS */}
-        <Section title="Monthly Costs" subtitle="Recurring monthly expenses">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Maintenance fee">
-              <NumberInput value={inputs.monthly_maintenance} onChange={(v) => set("monthly_maintenance", v)} />
-            </Field>
-            <Field label="Society charges">
-              <NumberInput value={inputs.society_charges} onChange={(v) => set("society_charges", v)} />
-            </Field>
-            <Field label="Parking">
-              <NumberInput value={inputs.parking} onChange={(v) => set("parking", v)} />
-            </Field>
-            <Field label="Property management">
-              <NumberInput value={inputs.property_management} onChange={(v) => set("property_management", v)} />
-            </Field>
-            <Field label="Insurance (monthly)">
-              <NumberInput value={inputs.insurance_monthly} onChange={(v) => set("insurance_monthly", v)} />
-            </Field>
-            <Field label="Other monthly expenses">
-              <NumberInput value={inputs.other_monthly} onChange={(v) => set("other_monthly", v)} />
-            </Field>
-          </div>
-        </Section>
+      {!has && <Alert tone="info">Enter a property price in the Affordability tab to see cost totals alongside your loan.</Alert>}
 
-        {/* ANNUAL COSTS */}
-        <Section title="Annual Costs" subtitle="Costs paid once a year">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Property tax">
-              <NumberInput value={inputs.property_tax} onChange={(v) => set("property_tax", v)} />
-            </Field>
-            <Field label="Insurance (annual)">
-              <NumberInput value={inputs.insurance_annual} onChange={(v) => set("insurance_annual", v)} />
-            </Field>
-            <Field label="Repairs">
-              <NumberInput value={inputs.repairs} onChange={(v) => set("repairs", v)} />
-            </Field>
-            <Field label="Maintenance reserve">
-              <NumberInput value={inputs.maintenance_reserve} onChange={(v) => set("maintenance_reserve", v)} />
-            </Field>
-            <Field label="Other annual costs">
-              <NumberInput value={inputs.other_annual} onChange={(v) => set("other_annual", v)} />
-            </Field>
-          </div>
-        </Section>
-      </div>
+      <CostSection
+        title="Monthly Costs"
+        section="monthly"
+        categories={MONTHLY_CATEGORIES}
+        costs={costs}
+        onAdd={() => addCost("monthly")}
+        onUpdate={updateCost}
+        onRemove={removeCost}
+        allowFrequency
+      />
+      <CostSection
+        title="Annual Costs"
+        section="annual"
+        categories={ANNUAL_CATEGORIES}
+        costs={costs}
+        onAdd={() => addCost("annual")}
+        onUpdate={updateCost}
+        onRemove={removeCost}
+        allowFrequency
+      />
+      <CostSection
+        title="One-Time Costs"
+        section="onetime"
+        categories={ONETIME_CATEGORIES}
+        costs={costs}
+        onAdd={() => addCost("onetime")}
+        onUpdate={updateCost}
+        onRemove={removeCost}
+      />
 
-      {/* ONE-TIME */}
-      <Section title="One-Time Costs" subtitle="Upfront costs at purchase">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Field label="Registration">
-            <NumberInput value={inputs.registration} onChange={(v) => set("registration", v)} />
-          </Field>
-          <Field label="Stamp duty">
-            <NumberInput value={inputs.stamp_duty} onChange={(v) => set("stamp_duty", v)} />
-          </Field>
-          <Field label="Brokerage">
-            <NumberInput value={inputs.brokerage} onChange={(v) => set("brokerage", v)} />
-          </Field>
-          <Field label="Interior / Furnishing">
-            <NumberInput value={inputs.furnishing} onChange={(v) => set("furnishing", v)} />
-          </Field>
-          <Field label="Moving costs">
-            <NumberInput value={inputs.moving} onChange={(v) => set("moving", v)} />
-          </Field>
-          <Field label="Other purchase costs">
-            <NumberInput value={inputs.other_one_time} onChange={(v) => set("other_one_time", v)} />
-          </Field>
+      {/* Totals */}
+      <Section title="Cost Summary" subtitle="Totals across all added costs.">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="incl. EMI" emphasis />
+          <ResultCard label="Total Annual Cost" value={formatCompact(r.estimatedAnnualPropertyCost)} sub="monthly × 12" />
+          <ResultCard label="One-Time Costs" value={formatCompact(r.oneTimeTotal)} />
+          <ResultCard label="Initial Cash Required" value={formatCompact(r.totalInitialCash)} sub="down payment + one-time" />
         </div>
+        <Divider />
+        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+          <SummaryLine label="EMI" value={formatINR(r.emi)} />
+          <SummaryLine label="Recurring monthly costs" value={formatINR(r.recurringMonthly)} />
+          <SummaryLine label="One-time costs" value={formatINR(r.oneTimeTotal)} />
+          <SummaryLine label="Down payment" value={formatINR(r.downPayment)} />
+        </div>
+        <p className="mt-3 text-xs text-sub">Annual costs are normalised to a monthly equivalent and included in the total monthly cost.</p>
       </Section>
-
-      {/* COST SUMMARY */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <Section title="Monthly Cost">
-          <Line label="EMI" value={formatINR(r.emi)} />
-          <Line label="Maintenance" value={formatINR(r.monthlyMaintenance)} />
-          <Line label="Other recurring costs" value={formatINR(r.otherMonthly)} />
-          <Divider />
-          <Total label="Total Monthly Cost" value={formatINR(r.totalMonthlyCost)} />
-        </Section>
-
-        <Section title="Annual Cost">
-          <Line label="Monthly costs × 12" value={formatINR(r.totalMonthlyCost * 12)} />
-          <Line label="Annual property costs" value={formatINR(r.annualCostTotal)} />
-          <Divider />
-          <Total label="Estimated Annual Property Cost" value={formatINR(r.estimatedAnnualPropertyCost)} />
-        </Section>
-
-        <Section title="Initial Investment">
-          <Line label="Down payment" value={formatINR(r.downPaymentNeeded)} />
-          <Line label="Registration" value={formatINR(inputs.registration)} />
-          <Line label="Stamp duty & taxes" value={formatINR((+inputs.stamp_duty || 0) + (+inputs.property_tax || 0))} />
-          <Line label="Brokerage" value={formatINR(inputs.brokerage)} />
-          <Line label="Furnishing" value={formatINR(inputs.furnishing)} />
-          <Line label="Other one-time" value={formatINR((+inputs.moving || 0) + (+inputs.other_one_time || 0))} />
-          <Divider />
-          <Total label="Total Initial Cash Requirement" value={formatINR(r.totalInitialCash)} />
-        </Section>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="per month" tone="soft" />
-        <ResultCard label="Annual Property Cost" value={formatCompact(r.estimatedAnnualPropertyCost)} sub="per year" tone="soft" />
-        <ResultCard label="Initial Cash Required" value={formatCompact(r.totalInitialCash)} sub="upfront" tone="soft" />
-      </div>
     </div>
   );
 }
 
-function Line({ label, value }) {
+function CostSection({ title, section, categories, costs, onAdd, onUpdate, onRemove, allowFrequency }) {
+  const items = costs.filter((c) => c.section === section);
+  const freqOptions = section === "onetime" ? ["One-Time"] : FREQUENCIES.filter((f) => f !== "One-Time");
+  return (
+    <Section
+      title={title}
+      subtitle={`Add the ${title.toLowerCase()} that apply to your purchase.`}
+      right={<Button variant="secondary" size="sm" icon={Plus} onClick={onAdd}>Add Cost</Button>}
+    >
+      {items.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-line bg-appbg px-4 py-8 text-center text-sm text-sub">
+          <Wallet className="mx-auto mb-2 h-5 w-5 text-sub/60" />
+          No {title.toLowerCase()} added yet.
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {items.map((c) => (
+            <div key={c.id} className="grid grid-cols-12 items-end gap-2">
+              <div className="col-span-12 sm:col-span-5">
+                <Field label="Category">
+                  <Select value={c.category} onChange={(v) => onUpdate(c.id, { category: v })} options={categories} renderOption={(o) => o} />
+                </Field>
+              </div>
+              <div className="col-span-7 sm:col-span-4">
+                <Field label="Amount">
+                  <NumberInput value={c.amount} onChange={(v) => onUpdate(c.id, { amount: v })} />
+                </Field>
+              </div>
+              {allowFrequency && (
+                <div className="col-span-5 sm:col-span-2">
+                  <Field label="Frequency">
+                    <Select value={c.frequency} onChange={(v) => onUpdate(c.id, { frequency: v })} options={freqOptions} renderOption={(o) => o} />
+                  </Field>
+                </div>
+              )}
+              <div className={allowFrequency ? "col-span-12 sm:col-span-1 flex justify-end" : "col-span-5 sm:col-span-1 flex justify-end"}>
+                <Button variant="ghost" size="md" icon={Trash2} onClick={() => onRemove(c.id)} aria-label="Remove cost" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+}
+
+function SummaryLine({ label, value }) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-sm font-medium text-slate-700">{value}</span>
-    </div>
-  );
-}
-
-function Total({ label, value }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg bg-slate-900 px-3 py-2 text-white">
-      <span className="text-sm font-medium">{label}</span>
-      <span className="text-base font-semibold">{value}</span>
+      <span className="text-sm text-sub">{label}</span>
+      <span className="text-sm font-medium text-ink">{value}</span>
     </div>
   );
 }
