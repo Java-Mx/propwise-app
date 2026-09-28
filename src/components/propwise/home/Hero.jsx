@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import CalcEngine from "@/components/propwise/home/CalcEngine";
-import MobileCalcCard from "@/components/propwise/MobileCalcCard";
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -15,13 +14,9 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-pagebg">
-      {/* hero-only subtle radial highlights */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 75% 35%, rgba(47,143,131,0.07), transparent 32%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 18% 70%, rgba(24,35,58,0.04), transparent 30%)" }} />
-
-      <div className="relative mx-auto flex max-w-[1240px] items-center px-4 py-14 lg:min-h-[660px] lg:py-0">
-        <div className="grid w-full items-center gap-10 lg:grid-cols-[1.08fr_1fr] lg:gap-[60px]">
+    <section className="bg-pagebg">
+      <div className="mx-auto max-w-[1240px] px-4 py-16 lg:py-20">
+        <div className="grid w-full items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* left */}
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 24 }}
@@ -33,13 +28,13 @@ export default function Hero() {
               Property Decision Support
             </div>
 
-            <h1 className="mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-ink sm:text-4xl lg:text-[54px] lg:leading-[1.06]">
+            <h1 className="mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-ink lg:text-[52px] lg:leading-[1.08]">
               Before you buy a home,
               <br className="hidden sm:block" /> know what it will{" "}
               <span className="relative inline-block">
                 really cost.
                 <motion.span
-                  className="absolute bottom-0.5 left-0 h-[3px] w-full rounded-full bg-jade"
+                  className="absolute bottom-1 left-0 h-[3px] w-full rounded-[2px] bg-jade"
                   style={{ transformOrigin: "left center" }}
                   initial={reduce ? false : { scaleX: 0 }}
                   animate={reduce ? {} : { scaleX: 1 }}
@@ -74,24 +69,13 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* right — desktop calculation engine */}
+          {/* right — clean calculation flow (responsive) */}
           <motion.div
-            className="hidden md:block"
             initial={reduce ? false : { opacity: 0, y: 24 }}
             animate={reduce ? {} : { opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
             <CalcEngine />
-          </motion.div>
-
-          {/* mobile calculation card */}
-          <motion.div
-            className="md:hidden"
-            initial={reduce ? false : { opacity: 0, y: 24 }}
-            animate={reduce ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <MobileCalcCard />
           </motion.div>
         </div>
       </div>
