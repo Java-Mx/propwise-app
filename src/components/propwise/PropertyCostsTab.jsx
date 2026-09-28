@@ -58,22 +58,24 @@ export default function PropertyCostsTab({ inputs, set, r }) {
       />
 
       {/* Totals */}
-      <Section id="costs-summary" title="Cost Summary" subtitle="Totals across all added costs.">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="incl. EMI" emphasis />
-          <ResultCard label="Total Annual Cost" value={formatCompact(r.estimatedAnnualPropertyCost)} sub="monthly × 12" />
-          <ResultCard label="One-Time Costs" value={formatCompact(r.oneTimeTotal)} />
-          <ResultCard label="Initial Cash Required" value={formatCompact(r.totalInitialCash)} sub="down payment + one-time" />
-        </div>
-        <Divider />
-        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-          <SummaryLine label="EMI" value={formatINR(r.emi)} />
-          <SummaryLine label="Recurring monthly costs" value={formatINR(r.recurringMonthly)} />
-          <SummaryLine label="One-time costs" value={formatINR(r.oneTimeTotal)} />
-          <SummaryLine label="Down payment" value={formatINR(r.downPayment)} />
-        </div>
-        <p className="mt-3 text-xs text-sub">Annual costs are normalised to a monthly equivalent and included in the total monthly cost.</p>
-      </Section>
+      {has && (
+        <Section id="costs-summary" title="Cost Summary" subtitle="Totals across all added costs.">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="incl. EMI" tone="green" />
+            <ResultCard label="Total Annual Cost" value={formatCompact(r.estimatedAnnualPropertyCost)} sub="monthly × 12" />
+            <ResultCard label="One-Time Costs" value={formatCompact(r.oneTimeTotal)} />
+            <ResultCard label="Initial Cash Required" value={formatCompact(r.totalInitialCash)} sub="down payment + one-time" />
+          </div>
+          <Divider />
+          <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+            <SummaryLine label="EMI" value={formatINR(r.emi)} />
+            <SummaryLine label="Recurring monthly costs" value={formatINR(r.recurringMonthly)} />
+            <SummaryLine label="One-time costs" value={formatINR(r.oneTimeTotal)} />
+            <SummaryLine label="Down payment" value={formatINR(r.downPayment)} />
+          </div>
+          <p className="mt-3 text-xs text-sub">Annual costs are normalised to a monthly equivalent and included in the total monthly cost.</p>
+        </Section>
+      )}
     </div>
   );
 }

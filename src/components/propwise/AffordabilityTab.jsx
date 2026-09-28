@@ -22,7 +22,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           <ResultCard label="Your Contribution" value={formatCompact(r.saved)} />
           <ResultCard label="Loan Required" value={formatCompact(r.actualLoan)} />
           <ResultCard label="Estimated EMI" value={formatCompact(r.emi)} sub="per month" />
-          <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="per month" emphasis />
+          <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="per month" tone="green" />
         </div>
       )}
 

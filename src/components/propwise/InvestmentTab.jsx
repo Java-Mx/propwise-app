@@ -10,7 +10,7 @@ import { LineChart, Line, Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip,
 const SUB_TABS = [
   { key: "profile", label: "Buyer Profile" },
   { key: "rental", label: "Rental Analysis" },
-  { key: "compare", label: "Compare" },
+  { key: "longterm", label: "Long-Term Projection" },
 ];
 
 export default function InvestmentTab({ inputs, set, r, sub: subProp, setSub: setSubProp }) {
@@ -33,11 +33,11 @@ export default function InvestmentTab({ inputs, set, r, sub: subProp, setSub: se
         ))}
       </div>
 
-      {!has && <Alert tone="info">Enter a property price in the Affordability tab to populate this analysis.</Alert>}
+      {!has && sub !== "rental" && <Alert tone="info">Enter a property price in the Affordability tab to populate this analysis.</Alert>}
 
-      {sub === "profile" && <BuyerProfile r={r} inputs={inputs} />}
+      {sub === "profile" && has && <BuyerProfile r={r} inputs={inputs} />}
       {sub === "rental" && <RentalAnalysis inputs={inputs} set={set} r={r} />}
-      {sub === "compare" && <ScenarioCompare inputs={inputs} set={set} />}
+      {sub === "longterm" && has && <LongTermProjection inputs={inputs} set={set} r={r} />}
     </div>
   );
 }
@@ -119,7 +119,7 @@ function RentalAnalysis({ inputs, set, r }) {
                 <Divider />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-sub">Net Rental Benefit</span>
-                  <span className="text-lg font-semibold text-ink">{formatINR(r.netMonthlyRentalBenefit)}</span>
+                  <span className="text-lg font-semibold text-jade">{formatINR(r.netMonthlyRentalBenefit)}</span>
                 </div>
               </div>
             </div>
@@ -132,13 +132,19 @@ function RentalAnalysis({ inputs, set, r }) {
               <div className="mt-2 text-xs text-white/70">Total Monthly Property Cost − Net Rental Benefit</div>
             </div>
           </Section>
-
-          {/* Yearly analysis */}
-          <Section id="inv-yearly" title="Yearly Property Analysis" subtitle="Projection over your selected horizon.">
-            <YearlyAnalysis inputs={inputs} set={set} r={r} />
-          </Section>
         </>
       )}
+    </div>
+  );
+}
+
+function LongTermProjection({ inputs, set, r }) {
+  return (
+    <div className="space-y-5">
+      <Section id="inv-yearly" title="Yearly Property Analysis" subtitle="Projection over your selected horizon.">
+        <YearlyAnalysis inputs={inputs} set={set} r={r} />
+      </Section>
+      <ScenarioCompare inputs={inputs} set={set} />
     </div>
   );
 }
@@ -148,7 +154,7 @@ function YearlyAnalysis({ inputs, set, r }) {
   const data = r.yearly.filter((d) => d.year <= period);
   return (
     <>
-      <div className="mb-4 max-w-[200px]">
+      <div className="mb-4 max-w-[220px]">
         <Field label="Projection Period">
           <ChoiceInput value={inputs.projection_years} onChange={(v) => set("projection_years", v)} options={PROJECTION_OPTIONS} suffix=" yrs" renderOption={(o) => `${o} years`} />
         </Field>

@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/propwise/ui";
+import { useAnalysis } from "@/lib/AnalysisContext";
 import {
   Home as HomeIcon, Calculator, Wallet, TrendingUp, Wrench, ChevronDown,
-  Plus, FolderOpen, Save, Download, Settings, Info, Trash2, X, Pencil, ChevronRight,
+  Plus, FolderOpen, Save, Download, Settings, Info, X, Pencil,
 } from "lucide-react";
 
 const MENUS = [
   {
-    key: "affordability", label: "Affordability", icon: Calculator, tab: "affordability",
+    key: "affordability", label: "Affordability", icon: Calculator, route: "/analysis/affordability",
     sections: [
       { heading: "Property & Loan", items: [
         { label: "Property Details", anchor: "aff-inputs" },
@@ -28,7 +30,7 @@ const MENUS = [
     ],
   },
   {
-    key: "costs", label: "Property Costs", icon: Wallet, tab: "costs",
+    key: "costs", label: "Property Costs", icon: Wallet, route: "/analysis/property-costs",
     sections: [
       { heading: "Costs", items: [
         { label: "Monthly Costs", anchor: "costs-monthly" },
@@ -40,14 +42,14 @@ const MENUS = [
         { label: "Total Annual Cost", anchor: "costs-summary" },
         { label: "Initial Cash Requirement", anchor: "costs-summary" },
       ]},
-      { heading: "Cost Analysis", items: [
+      { heading: "Analysis", items: [
         { label: "Cost Breakdown", anchor: "costs-summary" },
         { label: "Ownership Cost Summary", anchor: "costs-summary" },
       ]},
     ],
   },
   {
-    key: "investment", label: "Investment", icon: TrendingUp, tab: "investment",
+    key: "investment", label: "Investment", icon: TrendingUp, route: "/analysis/investment",
     sections: [
       { heading: "Buyer Analysis", items: [
         { label: "Buyer Profile", invSub: "profile", anchor: "inv-buyerprofile" },
@@ -61,13 +63,13 @@ const MENUS = [
         { label: "Net Rental Benefit", invSub: "rental", anchor: "inv-rentalbenefit" },
       ]},
       { heading: "Long-Term", items: [
-        { label: "Property Value Projection", invSub: "rental", anchor: "inv-yearly" },
-        { label: "Equity Growth", invSub: "rental", anchor: "inv-yearly" },
-        { label: "Yearly Investment Analysis", invSub: "rental", anchor: "inv-yearly" },
+        { label: "Property Value Projection", invSub: "longterm", anchor: "inv-yearly" },
+        { label: "Equity Growth", invSub: "longterm", anchor: "inv-yearly" },
+        { label: "Yearly Investment Analysis", invSub: "longterm", anchor: "inv-yearly" },
       ]},
       { heading: "Comparison", items: [
-        { label: "Scenario Comparison", invSub: "compare", anchor: "inv-compare" },
-        { label: "Property Comparison", invSub: "compare", anchor: "inv-compare" },
+        { label: "Scenario Comparison", invSub: "longterm", anchor: "inv-compare" },
+        { label: "Property Comparison", invSub: "longterm", anchor: "inv-compare" },
       ]},
     ],
   },
@@ -90,29 +92,22 @@ const MENUS = [
   },
 ];
 
-export default function PropWiseHeader({
-  activeTab,
-  onNavigate,
-  onNew,
-  onSave,
-  saving,
-  onExport,
-  savedAnalyses,
-  onLoadSaved,
-  onDeleteSaved,
-  onRefreshSaved,
-  analysisTitle,
-  onRename,
-  formatPrice,
-}) {
+export default function PropWiseHeader() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const analysis = useAnalysis();
   const [openMenu, setOpenMenu] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSub, setMobileSub] = useState(null);
-  const [showSaved, setShowSaved] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [renameVal, setRenameVal] = useState(analysisTitle || "");
+  const [renameVal, setRenameVal] = useState(analysis.inputs.title || "");
   const navRef = useRef(null);
+
+  const activeTab = location.pathname.startsWith("/analysis/affordability") ? "affordability"
+    : location.pathname.startsWith("/analysis/property-costs") ? "costs"
+    : location.pathname.startsWith("/analysis/investment") ? "investment"
+    : location.pathname.startsWith("/tools") ? "tools" : null;
 
   useEffect(() => {
     const onClick = (e) => {
@@ -130,35 +125,47 @@ export default function PropWiseHeader({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const handleItem = (menu, item) => {
+  const go = (menu, item) => {
     setOpenMenu(null);
     setMobileOpen(false);
     setMobileSub(null);
-    if (item.action) {
-      switch (item.action) {
-        case "new": onNew(); break;
-        case "save": onSave(); break;
-        case "export": onExport(); break;
-        case "saved": onRefreshSaved(); setShowSaved(true); break;
-        case "settings": setRenameVal(analysisTitle || ""); setShowSettings(true); break;
-        case "help": setShowHelp(true); break;
-      }
-      return;
+    const search = item.invSub ? `?sub=${item.invSub}` : "";
+    const hash = item.anchor ? `#${item.anchor}` : "";
+    navigate(`${menu.route}${search}${hash}`);
+  };
+
+  const handleAction = (item) => {
+    setOpenMenu(null);
+    setMobileOpen(false);
+    setMobileSub(null);
+    switch (item.action) {
+      case "new": analysis.requestNew(); break;
+      case "save": analysis.requestSave(); break;
+      case "export": analysis.exportReport(); break;
+      case "saved": navigate("/tools/saved"); break;
+      case "settings": setRenameVal(analysis.inputs.title || ""); setShowSettings(true); break;
+      case "help": setShowHelp(true); break;
     }
-    onNavigate({ tab: menu.tab, anchor: item.anchor, invSub: item.invSub });
+  };
+
+  const handleItem = (menu, item) => {
+    if (item.action) handleAction(item);
+    else go(menu, item);
   };
 
   const applyRename = () => {
-    onRename(renameVal.trim());
+    analysis.set("title", renameVal.trim());
     setShowSettings(false);
   };
 
   const triggerMenu = (key) => setOpenMenu(openMenu === key ? null : key);
 
-  const renderDropdown = (menu) => (
+  const renderDropdown = (menu, idx) => (
     <div
       className={cn(
-        "absolute top-full right-0 mt-1 w-64 rounded-xl border border-line bg-white p-2 shadow-lg z-50",
+        "absolute top-full mt-1.5 w-64 rounded-[10px] border border-line bg-white p-2 z-50",
+        "shadow-[0_8px_24px_rgba(24,35,58,0.10)]",
+        idx >= MENUS.length - 2 ? "right-0" : "left-0",
         openMenu === menu.key ? "block" : "hidden"
       )}
     >
@@ -166,16 +173,19 @@ export default function PropWiseHeader({
         <div key={s.heading}>
           {i > 0 && <div className="my-1.5 h-px bg-line" />}
           <div className="px-2 pt-1.5 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sub">{s.heading}</div>
-          {s.items.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => handleItem(menu, item)}
-              className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#EDF7F4]"
-            >
-              {item.icon ? <item.icon className="h-4 w-4 text-sub group-hover:text-jade" /> : <span className="h-4 w-4" />}
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {s.items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.label}
+                onClick={() => handleItem(menu, item)}
+                className="group flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm text-ink transition hover:bg-[#E8F5F1] hover:text-jade"
+              >
+                {Icon ? <Icon className="h-4 w-4 text-jade" /> : <span className="h-4 w-4" />}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       ))}
     </div>
@@ -185,7 +195,7 @@ export default function PropWiseHeader({
     <header className="sticky top-0 z-30 border-b border-line bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         {/* Logo */}
-        <button onClick={() => onNavigate({ tab: activeTab, anchor: null })} className="flex items-center gap-2.5 text-left">
+        <button onClick={() => navigate("/")} className="flex items-center gap-2.5 text-left">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
             <HomeIcon className="h-5 w-5" />
           </div>
@@ -197,28 +207,30 @@ export default function PropWiseHeader({
 
         {/* Desktop nav */}
         <nav ref={navRef} className="ml-auto hidden items-center gap-1 md:flex relative">
-          {MENUS.map((menu) => {
+          {MENUS.map((menu, idx) => {
             const isOpen = openMenu === menu.key;
-            const isActive = activeTab === menu.key && menu.key !== "tools";
+            const isActive = activeTab === menu.key;
             return (
               <div key={menu.key} className="relative">
                 <button
                   onClick={() => triggerMenu(menu.key)}
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-sm font-medium transition",
-                    isOpen ? "bg-brand text-white" : isActive ? "text-ink" : "text-sub hover:bg-appbg hover:text-ink"
+                    isOpen || isActive
+                      ? "bg-[#EEF1F6] text-ink"
+                      : "text-steel hover:bg-[#E8F5F1] hover:text-jade"
                   )}
                 >
                   <span>{menu.label}</span>
                   <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
                 </button>
-                {renderDropdown(menu)}
+                {renderDropdown(menu, idx)}
               </div>
             );
           })}
         </nav>
 
-        {/* Mobile hamburger */}
+        {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen((v) => !v)}
           className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink hover:bg-appbg md:hidden"
@@ -231,72 +243,54 @@ export default function PropWiseHeader({
       {/* Mobile panel */}
       {mobileOpen && (
         <div className="border-t border-line bg-white px-4 py-2 md:hidden">
-          {MENUS.map((menu) => (
-            <div key={menu.key} className="border-b border-line/60 last:border-0">
-              <button
-                onClick={() => setMobileSub(mobileSub === menu.key ? null : menu.key)}
-                className="flex w-full items-center justify-between py-3 text-sm font-medium text-ink"
-              >
-                <span className="flex items-center gap-2">
-                  <menu.icon className="h-4 w-4 text-sub" />
-                  {menu.label}
-                </span>
-                <ChevronDown className={cn("h-4 w-4 text-sub transition-transform", mobileSub === menu.key && "rotate-180")} />
-              </button>
-              {mobileSub === menu.key && (
-                <div className="pb-3">
-                  {menu.sections.map((s) => (
-                    <div key={s.heading} className="mb-2">
-                      <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-sub">{s.heading}</div>
-                      {s.items.map((item) => (
-                        <button
-                          key={item.label}
-                          onClick={() => handleItem(menu, item)}
-                          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink hover:bg-appbg"
-                        >
-                          {item.icon ? <item.icon className="h-4 w-4 text-sub" /> : <ChevronRight className="h-3.5 w-3.5 text-sub/50" />}
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          {MENUS.map((menu) => {
+            const MenuIcon = menu.icon;
+            return (
+              <div key={menu.key} className="border-b border-line/60 last:border-0">
+                <button
+                  onClick={() => setMobileSub(mobileSub === menu.key ? null : menu.key)}
+                  className="flex w-full items-center justify-between py-3 text-sm font-medium text-ink"
+                >
+                  <span className="flex items-center gap-2">
+                    {MenuIcon && <MenuIcon className="h-4 w-4 text-sub" />}
+                    {menu.label}
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 text-sub transition-transform", mobileSub === menu.key && "rotate-180")} />
+                </button>
+                {mobileSub === menu.key && (
+                  <div className="pb-3">
+                    {menu.sections.map((s) => (
+                      <div key={s.heading} className="mb-2">
+                        <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-sub">{s.heading}</div>
+                        {s.items.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={item.label}
+                              onClick={() => handleItem(menu, item)}
+                              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-ink hover:bg-[#E8F5F1] hover:text-jade"
+                            >
+                              {Icon ? <Icon className="h-4 w-4 text-jade" /> : <span className="h-4 w-4" />}
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
-
-      {/* Saved analyses modal */}
-      <Modal open={showSaved} onClose={() => setShowSaved(false)} title="Saved Analyses" wide>
-        {savedAnalyses.length === 0 ? (
-          <div className="py-6 text-center">
-            <p className="text-sm text-sub">No saved analyses yet.</p>
-            <Button variant="primary" size="sm" icon={Plus} className="mt-3" onClick={() => { setShowSaved(false); onNew(); }}>Start New Analysis</Button>
-          </div>
-        ) : (
-          <div className="max-h-80 space-y-1 overflow-y-auto">
-            {savedAnalyses.map((a) => (
-              <div key={a.id} className="group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-appbg">
-                <button onClick={() => { onLoadSaved(a.id); setShowSaved(false); }} className="flex-1 min-w-0 text-left">
-                  <div className="truncate text-sm font-medium text-ink">{a.title || "Untitled"}</div>
-                  <div className="text-xs text-sub">{formatPrice(a.property_price)}{a.updated_date ? ` · ${new Date(a.updated_date).toLocaleDateString()}` : ""}</div>
-                </button>
-                <button onClick={() => onDeleteSaved(a.id)} className="rounded p-1 text-sub hover:text-err" aria-label="Delete">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </Modal>
 
       {/* Settings modal */}
       <Modal open={showSettings} onClose={() => setShowSettings(false)} title="Settings">
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium text-ink">Analysis name</label>
-            <div className="mt-1.5 flex items-center rounded-lg border border-line bg-white px-3 py-2">
+            <div className="mt-1.5 flex h-11 items-center rounded-md border border-line bg-white px-3">
               <Pencil className="mr-2 h-3.5 w-3.5 text-sub" />
               <input
                 autoFocus
@@ -332,6 +326,35 @@ export default function PropWiseHeader({
           </div>
         </div>
       </Modal>
+
+      {/* New analysis confirmation */}
+      <Modal open={analysis.confirmNew} onClose={() => analysis.setConfirmNew(false)} title="Start a new analysis?">
+        <p className="text-sm text-sub">Your current unsaved information will be cleared.</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="secondary" size="md" onClick={() => analysis.setConfirmNew(false)}>Cancel</Button>
+          <Button variant="primary" size="md" onClick={analysis.doNew}>Start New</Button>
+        </div>
+      </Modal>
+
+      {/* Save name prompt */}
+      <Modal open={analysis.namePrompt} onClose={() => analysis.setNamePrompt(false)} title="Name this analysis">
+        <div className="space-y-3">
+          <div className="flex h-11 items-center rounded-md border border-line bg-white px-3">
+            <input
+              autoFocus
+              value={analysis.nameVal}
+              onChange={(e) => analysis.setNameVal(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && analysis.confirmNameSave()}
+              placeholder="Analysis name"
+              className="w-full bg-transparent text-sm text-ink outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" size="md" onClick={() => analysis.setNamePrompt(false)}>Cancel</Button>
+            <Button variant="primary" size="md" onClick={analysis.confirmNameSave}>Save Analysis</Button>
+          </div>
+        </div>
+      </Modal>
     </header>
   );
 }
@@ -354,7 +377,7 @@ function Modal({ open, onClose, title, children, wide }) {
 function HelpRow({ icon: Icon, title, text }) {
   return (
     <div className="flex items-start gap-2.5 rounded-lg border border-line p-2.5">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-appbg text-brand">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#E8F5F1] text-jade">
         <Icon className="h-4 w-4" />
       </div>
       <div>

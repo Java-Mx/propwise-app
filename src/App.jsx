@@ -6,7 +6,10 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-import Home from '@/pages/Home';
+import Landing from '@/pages/Landing';
+import Analysis from '@/pages/Analysis';
+import SavedAnalyses from '@/pages/SavedAnalyses';
+import { AnalysisProvider } from '@/lib/AnalysisContext';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -34,11 +37,17 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
-      {/* Add your page Route elements here */}
-      <Route path="/" element={<Home />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <AnalysisProvider>
+      <Routes>
+        {/* Add your page Route elements here */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/analysis/affordability" element={<Analysis />} />
+        <Route path="/analysis/property-costs" element={<Analysis />} />
+        <Route path="/analysis/investment" element={<Analysis />} />
+        <Route path="/tools/saved" element={<SavedAnalyses />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </AnalysisProvider>
   );
 };
 
