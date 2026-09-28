@@ -4,19 +4,19 @@ import { useAnalysis } from "@/lib/AnalysisContext";
 import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 import { formatINR, formatCompact, num } from "@/lib/finance";
 import MiniEmpty from "@/components/propwise/home/charts/MiniEmpty";
-import { ChartFooter } from "@/components/propwise/home/charts/AffordabilityMini";
 import { TrendingUp } from "lucide-react";
 
 const SPANS = [5, 10, 15, 20];
 
-// "How do property value, loan balance and equity change over time?"
-// Multi-series projection using the same amortization + appreciation engine
-// as the Investment page (r.yearly). Only years up to the chosen horizon show.
+// "What happens over time?" — compact segmented control + projection line chart
+// (Property Value / Loan Balance / Estimated Equity) and a one-line summary.
+// Methodology lives behind a tiny "View assumptions" toggle, not in the card body.
 export default function InvestmentMini() {
   const { r } = useAnalysis();
   const t = useChartTheme();
   const maxYear = r.yearly.length || 0;
   const [span, setSpan] = useState(20);
+  const [showAssumptions, setShowAssumptions] = useState(false);
 
   const horizon = Math.min(SPANS.includes(span) ? span : SPANS.find((s) => s <= maxYear) || 5, Math.max(maxYear, 5));
 
@@ -30,36 +30,39 @@ export default function InvestmentMini() {
   }, [r.hasInputs, r.price, r.actualLoan, r.yearly, horizon]);
 
   if (!r.hasInputs) {
-    return <MiniEmpty title="Enter your property details" sub="Your value, loan and equity projection will appear here." icon={TrendingUp} />;
+    return (
+      <div className="h-[200px]">
+        <MiniEmpty title="Complete your property and loan details to see future projections." sub="Value, loan and equity appear here." icon={TrendingUp} className="h-full" />
+      </div>
+    );
   }
 
   const last = data[data.length - 1] || {};
 
   return (
-    <div>
-      <div className="no-scrollbar mb-2 flex gap-1.5">
-        {SPANS.map((y) => {
-          const disabled = y > maxYear && maxYear > 0;
-          const active = horizon === y;
-          return (
-            <button
-              key={y}
-              disabled={disabled}
-              onClick={() => setSpan(y)}
-              className={`h-7 rounded-full px-2.5 text-xs font-medium transition ${active ? "bg-jade text-white" : "border border-line bg-white text-sub disabled:opacity-40"}`}
-            >
-              {y}Y
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="rounded-xl border border-line bg-pagebg p-2">
-        <ResponsiveContainer width="100%" height={150}>
-          <LineChart data={data} margin={{ top: 4, right: 6, left: -8, bottom: 0 }}>
+    <>
+      <div className="flex h-[200px] flex-col rounded-xl border border-line bg-pagebg p-3">
+        <div className="mb-2 inline-flex self-start rounded-lg border border-line bg-white p-0.5">
+          {SPANS.map((y) => {
+            const disabled = y > maxYear && maxYear > 0;
+            const active = horizon === y;
+            return (
+              <button
+                key={y}
+                disabled={disabled}
+                onClick={() => setSpan(y)}
+                className={`h-7 rounded-md px-3 text-xs font-medium transition ${active ? "bg-jade text-white" : "text-sub hover:text-ink disabled:opacity-40 disabled:hover:text-sub"}`}
+              >
+                {y}Y
+              </button>
+            );
+          })}
+        </div>
+        <ResponsiveContainer width="100%" height={140}>
+          <LineChart data={data} margin={{ top: 4, right: 6, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
             <XAxis dataKey="year" tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
-            <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={48} stroke={t.grid} />
+            <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={42} stroke={t.grid} />
             <Tooltip
               contentStyle={tooltipStyle(t)}
               formatter={(value, name) => [formatINR(value), name]}
@@ -73,15 +76,36 @@ export default function InvestmentMini() {
         </ResponsiveContainer>
       </div>
 
-      {last.year != null && (
-        <p className="mt-2 text-xs text-sub">
-          At year {last.year}: value {formatCompact(last.propertyValue)}, loan {formatCompact(last.loanBalance)}, equity {formatCompact(last.equity)}.
-        </p>
-      )}
-      <ChartFooter text="Based on your inputs — value uses your appreciation rate, loan uses the amortization schedule, equity = value − loan." />
-      <p className="sr-only" role="note">
-        At year {last.year}, estimated property value is {formatINR(last.propertyValue)}, remaining loan is {formatINR(last.loanBalance)}, and estimated equity is {formatINR(last.equity)}.
-      </p>
+      <div className="mt-4 space-y-2">
+        <div className="text-xs text-sub">At year {last.year}</div>
+        <div className="grid grid-cols-3 gap-2">
+          <SummaryStat label="Property" value={formatCompact(last.propertyValue)} color={t.series.value} />
+          <SummaryStat label="Loan" value={formatCompact(last.loanBalance)} color={t.series.loan} />
+          <SummaryStat label="Equity" value={formatCompact(last.equity)} color={t.series.equity} emphasis />
+        </div>
+        <div className="flex items-center justify-between pt-0.5">
+          <span className="text-[11px] text-sub">Based on your inputs</span>
+          <button onClick={() => setShowAssumptions((s) => !s)} className="text-[11px] font-medium text-jade hover:underline">
+            {showAssumptions ? "Hide assumptions" : "View assumptions"}
+          </button>
+        </div>
+        {showAssumptions && (
+          <div className="rounded-lg border border-line bg-pagebg p-2.5 text-[11px] leading-relaxed text-sub">
+            Property value uses your appreciation rate; loan balance uses the amortization schedule; estimated equity = property value − remaining loan.
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function SummaryStat({ label, value, color, emphasis }) {
+  return (
+    <div className="rounded-lg border border-line bg-white px-2.5 py-2">
+      <div className="flex items-center gap-1.5 text-[11px] text-sub">
+        <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: color }} /> {label}
+      </div>
+      <div className={`mt-1 text-sm font-semibold ${emphasis ? "text-jade" : "text-ink"}`}>{value}</div>
     </div>
   );
 }

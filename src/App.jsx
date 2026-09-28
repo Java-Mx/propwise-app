@@ -12,6 +12,7 @@ import SavedAnalyses from '@/pages/SavedAnalyses';
 import Sources from '@/pages/Sources';
 import { AnalysisProvider } from '@/lib/AnalysisContext';
 import { MobileToolsProvider } from '@/components/propwise/MobileTools';
+import AmbientBackground from '@/components/propwise/AmbientBackground';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -64,6 +65,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <AmbientBackground />
           <AuthenticatedApp />
         </Router>
         <Toaster />
