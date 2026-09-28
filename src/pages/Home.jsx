@@ -178,7 +178,7 @@ export default function Home() {
   const activeTabObj = TABS.find((t) => t.key === activeTab);
 
   return (
-    <div className="min-h-screen bg-appbg text-ink">
+    <div className="min-h-screen bg-background text-ink">
       {/* Header */}
       <PropWiseHeader
         activeTab={activeTab}
@@ -221,7 +221,7 @@ export default function Home() {
                     onBlur={() => setTitleEditing(false)}
                     onKeyDown={(e) => e.key === "Enter" && setTitleEditing(false)}
                     placeholder="Analysis name"
-                    className="h-9 w-48 rounded-lg border border-line px-3 text-sm font-medium text-ink outline-none focus:border-brand/40"
+                    className="h-9 w-48 rounded-lg border border-line bg-inputbg px-3 text-sm font-medium text-ink outline-none focus:border-jade/50 focus:ring-2 focus:ring-jade/15"
                   />
                 ) : (
                   <button onClick={() => setTitleEditing(true)} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-sm font-medium text-sub hover:text-ink">
