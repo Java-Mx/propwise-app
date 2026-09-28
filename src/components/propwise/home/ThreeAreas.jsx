@@ -12,7 +12,7 @@ import InvestmentMini from "@/components/propwise/home/charts/InvestmentMini";
 export default function ThreeAreas() {
   const navigate = useNavigate();
   return (
-    <section className="bg-white">
+    <section>
       <div className="mx-auto max-w-7xl px-4 py-20">
         <Reveal>
           <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-jade">Three questions, one engine</div>

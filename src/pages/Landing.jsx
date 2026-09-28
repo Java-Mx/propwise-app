@@ -12,7 +12,7 @@ import Footer from "@/components/propwise/home/Footer";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-pagebg text-ink">
+    <div className="min-h-screen text-ink">
       <PropWiseHeader />
       <main>
         <Hero />

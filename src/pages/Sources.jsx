@@ -47,7 +47,7 @@ export default function Sources() {
   })).filter((g) => g.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-pagebg text-ink">
+    <div className="min-h-screen text-ink">
       <PropWiseHeader />
 
       <main className="mx-auto max-w-5xl px-4 py-8">

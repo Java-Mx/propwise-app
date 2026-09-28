@@ -13,7 +13,7 @@ const METRICS = [
 export default function MetricsBand() {
   const { r } = useAnalysis();
   return (
-    <section className="bg-pagebg">
+    <section>
       <div className="mx-auto max-w-[1240px] px-4 py-10">
         <Reveal>
           <div className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_24px_rgba(24,35,58,0.05)] sm:p-8">

@@ -19,7 +19,7 @@ export default function Analysis() {
   const [titleEditing, setTitleEditing] = useState(false);
 
   return (
-    <div className="min-h-screen bg-pagebg text-ink">
+    <div className="min-h-screen text-ink">
       <PropWiseHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-6">

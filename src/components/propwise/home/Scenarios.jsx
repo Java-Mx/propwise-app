@@ -50,7 +50,7 @@ export default function Scenarios() {
   const last = r.yearly && r.yearly.length ? r.yearly[r.yearly.length - 1] : null;
 
   return (
-    <section className="bg-pagebg">
+    <section>
       <div className="mx-auto max-w-7xl px-4 py-20">
         <Reveal>
           <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-jade">Why this matters</div>

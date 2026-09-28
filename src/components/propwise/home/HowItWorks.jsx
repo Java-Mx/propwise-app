@@ -39,7 +39,7 @@ export default function HowItWorks() {
   }, [inView, reduce]);
 
   return (
-    <section id="how-it-works" className="scroll-mt-24 bg-white">
+    <section id="how-it-works" className="scroll-mt-24">
       <div ref={ref} className="mx-auto max-w-7xl px-4 py-24">
         <Reveal>
           <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">

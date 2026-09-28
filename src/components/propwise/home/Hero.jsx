@@ -14,7 +14,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="bg-pagebg">
+    <section>
       <div className="mx-auto max-w-[1240px] px-4 py-16 lg:py-20">
         <div className="grid w-full items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* left */}

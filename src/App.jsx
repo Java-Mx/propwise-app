@@ -66,7 +66,9 @@ function App() {
         <Router>
           <ScrollToTop />
           <AmbientBackground />
-          <AuthenticatedApp />
+          <div className="relative z-10">
+            <AuthenticatedApp />
+          </div>
         </Router>
         <Toaster />
       </QueryClientProvider>

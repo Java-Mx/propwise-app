@@ -150,36 +150,50 @@
 /* ---------- Ambient background system ---------- */
 .pw-grid {
   background-image:
-    linear-gradient(to right, rgba(24,35,58,0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(24,35,58,0.045) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.55;
+    linear-gradient(to right, rgba(24,35,58,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24,35,58,0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity: 0.5;
 }
 .dark .pw-grid {
   background-image:
-    linear-gradient(to right, rgba(130,150,180,0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(130,150,180,0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(130,150,180,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(130,150,180,0.06) 1px, transparent 1px);
   opacity: 1;
 }
-.pw-glow { opacity: 0; filter: blur(24px); }
-.dark .pw-glow { opacity: 1; }
-.pw-glow-navy { background: radial-gradient(circle, rgba(47,76,120,0.22), transparent 62%); }
-.pw-glow-teal { background: radial-gradient(circle, rgba(47,143,131,0.14), transparent 62%); }
+.pw-glow { filter: blur(40px); }
+.pw-glow-navy { background: radial-gradient(circle, rgba(47,76,120,0.05), transparent 62%); }
+.dark .pw-glow-navy { background: radial-gradient(circle, rgba(47,76,120,0.22), transparent 62%); }
+.pw-glow-teal { background: radial-gradient(circle, rgba(47,143,131,0.05), transparent 62%); }
+.dark .pw-glow-teal { background: radial-gradient(circle, rgba(47,143,131,0.14), transparent 62%); }
+.pw-glow-mid { opacity: 0; }
+.dark .pw-glow-mid { opacity: 1; background: radial-gradient(circle, rgba(24,35,58,0.12), transparent 62%); }
 .pw-sym {
   position: absolute;
   font-weight: 700;
-  color: #18233A;
-  opacity: 0.03;
+  color: #52627A;
+  opacity: 0.05;
   user-select: none;
   will-change: transform;
-  animation: pw-drift 30s ease-in-out infinite;
+  animation: pw-drift-a 30s ease-in-out infinite;
 }
-.dark .pw-sym { color: #8FA8C7; opacity: 0.028; }
-@keyframes pw-drift {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-14px); }
-  100% { transform: translateY(0); }
+.pw-sym.pw-teal { color: #2F8F83; }
+.dark .pw-sym { color: #8FA8C7; opacity: 0.045; }
+.dark .pw-sym.pw-teal { color: #49A99A; }
+.pw-sym.pw-b { animation-name: pw-drift-b; }
+.pw-line { position: absolute; opacity: 0.025; }
+.dark .pw-line { opacity: 0.03; }
+@keyframes pw-drift-a {
+  0%, 100% { transform: translate(0,0) rotate(0); }
+  50% { transform: translate(8px,-18px) rotate(2deg); }
+}
+@keyframes pw-drift-b {
+  0%, 100% { transform: translate(0,0) rotate(0); }
+  50% { transform: translate(-10px,-14px) rotate(-2deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pw-sym { animation: none !important; }
+}
+@media (max-width: 640px) {
+  .pw-sym { animation-duration: 42s !important; }
 }

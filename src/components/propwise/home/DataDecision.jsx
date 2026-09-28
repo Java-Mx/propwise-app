@@ -20,7 +20,7 @@ const COLS = [
 
 export default function DataDecision() {
   return (
-    <section className="bg-pagebg">
+    <section>
       <div className="mx-auto max-w-7xl px-4 py-20">
         <Reveal>
           <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-jade">From data to decision</div>
