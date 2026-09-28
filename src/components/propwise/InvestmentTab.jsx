@@ -13,8 +13,10 @@ const SUB_TABS = [
   { key: "compare", label: "Compare" },
 ];
 
-export default function InvestmentTab({ inputs, set, r }) {
-  const [sub, setSub] = useState("profile");
+export default function InvestmentTab({ inputs, set, r, sub: subProp, setSub: setSubProp }) {
+  const [subState, setSubState] = useState("profile");
+  const sub = subProp ?? subState;
+  const setSub = setSubProp ?? setSubState;
   const has = r.hasInputs;
 
   return (
@@ -49,7 +51,7 @@ function BuyerProfile({ r, inputs }) {
     { label: "Investment horizon", value: `${inputs.loan_tenure_years || 0} years` },
   ];
   return (
-    <Section title="Buyer Profile" subtitle="What type of buyer does this property financially suit?">
+    <Section id="inv-buyerprofile" title="Buyer Profile" subtitle="What type of buyer does this property financially suit?">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {characteristics.map((c) => (
           <div key={c.label} className="rounded-lg border border-line bg-appbg p-3">
@@ -85,7 +87,7 @@ function RentalAnalysis({ inputs, set, r }) {
 
       {r.hasInputs && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div id="inv-rental" className="grid scroll-mt-24 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             <ResultCard label="Monthly Rent" value={formatCompact(r.monthlyRent)} />
             <ResultCard label="Gross Annual Rent" value={formatCompact(r.grossAnnualRent)} />
             <ResultCard label="Effective Annual Rent" value={formatCompact(r.effectiveAnnualRent)} sub="after vacancy" />
@@ -97,7 +99,7 @@ function RentalAnalysis({ inputs, set, r }) {
           </div>
 
           {/* Cost vs benefit */}
-          <Section title="Monthly Cost vs Rental Benefit" subtitle="Two-sided comparison.">
+          <Section id="inv-rentalbenefit" title="Monthly Cost vs Rental Benefit" subtitle="Two-sided comparison.">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="rounded-lg border border-line p-4">
                 <div className="mb-3 text-sm font-semibold text-ink">Monthly Property Cost</div>
@@ -132,7 +134,7 @@ function RentalAnalysis({ inputs, set, r }) {
           </Section>
 
           {/* Yearly analysis */}
-          <Section title="Yearly Property Analysis" subtitle="Projection over your selected horizon.">
+          <Section id="inv-yearly" title="Yearly Property Analysis" subtitle="Projection over your selected horizon.">
             <YearlyAnalysis inputs={inputs} set={set} r={r} />
           </Section>
         </>

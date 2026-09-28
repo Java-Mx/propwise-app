@@ -27,7 +27,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
       )}
 
       {/* Inputs */}
-      <Section title="Property & Loan Details" subtitle="Enter your property and loan details.">
+      <Section id="aff-inputs" title="Property & Loan Details" subtitle="Enter your property and loan details.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Property Price">
             <NumberInput value={inputs.property_price} onChange={(v) => set("property_price", v)} />
@@ -75,7 +75,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           )}
 
           {/* Funding breakdown */}
-          <Section title="Funding Breakdown" subtitle="How the purchase is funded.">
+          <Section id="aff-funding" title="Funding Breakdown" subtitle="How the purchase is funded.">
             <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
               <FundingRow label="Property price" value={formatINR(r.price)} />
               <FundingRow label="Available savings" value={formatINR(r.saved)} />
@@ -98,7 +98,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
 
           {/* Monthly cost + burden */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <Section title="Monthly Cost" subtitle="Your monthly commitment to the property.">
+            <Section id="aff-monthly" title="Monthly Cost" subtitle="Your monthly commitment to the property.">
               <CostRow label="Estimated EMI" value={formatINR(r.emi)} />
               <CostRow label="Maintenance & other recurring" value={formatINR(r.recurringMonthly)} />
               <CostRow label="Existing EMI obligations" value={formatINR(r.existingEmi)} />
@@ -128,7 +128,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           </div>
 
           {/* Loan payoff */}
-          <Section title="Loan Payoff" subtitle="Total cost over the loan term." right={
+          <Section id="aff-loanpayoff" title="Loan Payoff" subtitle="Total cost over the loan term." right={
             r.tenure > 0 ? (
               <Button variant="secondary" size="sm" icon={ChevronDown} onClick={() => setShowAmortization((v) => !v)}>
                 {showAmortization ? "Hide" : "View"} Amortization
@@ -169,7 +169,7 @@ export default function AffordabilityTab({ inputs, set, r }) {
           </Section>
 
           {/* Future value */}
-          <Section title="Estimated Future Property Value" subtitle="Based on your selected appreciation assumption.">
+          <Section id="aff-future" title="Estimated Future Property Value" subtitle="Based on your selected appreciation assumption.">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Projection Period">
                 <ChoiceInput value={inputs.projection_years} onChange={(v) => set("projection_years", v)} options={PROJECTION_OPTIONS} suffix=" yrs" placeholder="Select" renderOption={(o) => `${o} years`} />
@@ -269,7 +269,7 @@ function DecisionSection({ r, suggestions }) {
     "Requires further review";
 
   return (
-    <Section title="What does this mean?" subtitle="A transparent, indicative assessment — not a recommendation.">
+    <Section id="aff-assessment" title="What does this mean?" subtitle="A transparent, indicative assessment — not a recommendation.">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {assessments.map((a) => (
           <div key={a.label} className="rounded-lg border border-line bg-appbg p-3">
@@ -291,7 +291,7 @@ function DecisionSection({ r, suggestions }) {
         ))}
       </ul>
       <Divider label="Should you buy?" />
-      <div className="flex items-start gap-2 rounded-lg bg-appbg p-3 text-sm text-sub">
+      <div id="aff-considerations" className="scroll-mt-24 flex items-start gap-2 rounded-lg bg-appbg p-3 text-sm text-sub">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-steel" />
         <span>Review before deciding — check emergency savings, existing obligations, actual loan terms, taxes, registration, transaction costs, and whether the assumed appreciation and rental income are realistic.</span>
       </div>

@@ -27,7 +27,7 @@ export default function ScenarioCompare({ inputs, set }) {
   const summaries = scenarios.map((s) => computeScenarioSummary(s, appreciation));
 
   return (
-    <Section title="Scenario Comparison" subtitle="Compare up to 3 property scenarios side by side." right={
+    <Section id="inv-compare" title="Scenario Comparison" subtitle="Compare up to 3 property scenarios side by side." right={
       <Button variant="secondary" size="sm" icon={Plus} onClick={addScenario} disabled={scenarios.length >= 3}>Add Scenario</Button>
     }>
       {scenarios.length === 0 ? (

@@ -176,9 +176,9 @@ export function ChoiceInput({ value, onChange, options, suffix = "%", allowCusto
 
 // ---------- Section ----------
 
-export function Section({ title, subtitle, children, right, className }) {
+export function Section({ title, subtitle, children, right, className, id }) {
   return (
-    <section className={cn("rounded-xl border border-line bg-white p-5 shadow-sm", className)}>
+    <section id={id} className={cn("rounded-xl border border-line bg-white p-5 shadow-sm scroll-mt-24", className)}>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-ink">{title}</h3>

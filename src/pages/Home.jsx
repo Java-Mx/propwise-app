@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { DEFAULT_INPUTS, computeAll, num, formatINR, formatCompact } from "@/lib/finance";
 import AffordabilityTab from "@/components/propwise/AffordabilityTab";
 import PropertyCostsTab from "@/components/propwise/PropertyCostsTab";
 import InvestmentTab from "@/components/propwise/InvestmentTab";
 import { Button, ConfirmDialog, EmptyState } from "@/components/propwise/ui";
-import { Home as HomeIcon, Calculator, Wallet, TrendingUp, Save, FolderOpen, Plus, Trash2, Download, Pencil } from "lucide-react";
+import PropWiseHeader from "@/components/propwise/PropWiseHeader";
+import { Home as HomeIcon, Calculator, Wallet, TrendingUp, Plus, Pencil } from "lucide-react";
 
 const TABS = [
   { key: "affordability", label: "Affordability", icon: Calculator, question: "Can I afford this property?", sub: "Enter your financial details to estimate the monthly and long-term cost." },
@@ -17,15 +18,14 @@ export default function Home() {
   const [inputs, setInputs] = useState({ ...DEFAULT_INPUTS });
   const [activeTab, setActiveTab] = useState("affordability");
   const [began, setBegan] = useState(false);
+  const [invSub, setInvSub] = useState("profile");
   const [savedAnalyses, setSavedAnalyses] = useState([]);
   const [currentId, setCurrentId] = useState(null);
-  const [showSaved, setShowSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [confirmNew, setConfirmNew] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [titleEditing, setTitleEditing] = useState(false);
-  const savedRef = useRef(null);
 
   const r = useMemo(() => computeAll(inputs), [inputs]);
 
@@ -38,12 +38,6 @@ export default function Home() {
   }, [inputs.property_price]);
 
   useEffect(() => { loadSaved(); }, []);
-
-  useEffect(() => {
-    const onClick = (e) => { if (savedRef.current && !savedRef.current.contains(e.target)) setShowSaved(false); };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
 
   const showToast = (msg, tone = "ok") => {
     setToast({ msg, tone });
@@ -86,7 +80,6 @@ export default function Home() {
       const { id: _id, created_date, updated_date, created_by_id, ...data } = rec;
       setInputs({ ...DEFAULT_INPUTS, ...data });
       setCurrentId(id);
-      setShowSaved(false);
       setBegan(true);
       setActiveTab("affordability");
       showToast("Analysis loaded");
@@ -118,6 +111,20 @@ export default function Home() {
   };
 
   const handleStart = () => setBegan(true);
+
+  const handleNavigate = ({ tab, anchor, invSub: inv }) => {
+    setActiveTab(tab);
+    if (inv) setInvSub(inv);
+    if (!began) setBegan(true);
+    if (anchor) {
+      setTimeout(() => {
+        const el = document.getElementById(anchor);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 90);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const handleExport = () => {
     if (!r.hasInputs) { showToast("Enter a property price first", "warn"); return; }
@@ -173,75 +180,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-appbg text-ink">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-line bg-white/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white">
-              <HomeIcon className="h-5 w-5" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-base font-semibold tracking-tight text-ink">PropWise</div>
-              <div className="hidden text-[11px] text-sub sm:block">Understand the real cost of your next home.</div>
-            </div>
-          </div>
-
-          <nav className="ml-4 hidden items-center gap-1 md:flex">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setActiveTab(t.key)}
-                className={`h-9 rounded-lg px-3.5 text-sm font-medium transition ${activeTab === t.key ? "bg-brand text-white" : "text-sub hover:bg-appbg hover:text-ink"}`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative" ref={savedRef}>
-              <Button variant="secondary" size="md" icon={FolderOpen} onClick={() => { setShowSaved((v) => !v); loadSaved(); }}>Saved</Button>
-              {showSaved && (
-                <div className="absolute right-0 mt-2 w-72 rounded-xl border border-line bg-white p-2 shadow-lg">
-                  {savedAnalyses.length === 0 ? (
-                    <div className="px-3 py-6 text-center">
-                      <p className="text-sm text-sub">No saved analyses yet.</p>
-                      <Button variant="primary" size="sm" icon={Plus} className="mt-3" onClick={() => { setShowSaved(false); handleStart(); }}>Create New Analysis</Button>
-                    </div>
-                  ) : (
-                    savedAnalyses.map((a) => (
-                      <div key={a.id} className="group flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-appbg">
-                        <button onClick={() => handleLoad(a.id)} className="flex-1 min-w-0 text-left">
-                          <div className="truncate text-sm font-medium text-ink">{a.title || "Untitled"}</div>
-                          <div className="text-xs text-sub">{formatShortPrice(a.property_price)}{a.updated_date ? ` · ${new Date(a.updated_date).toLocaleDateString()}` : ""}</div>
-                        </button>
-                        <button onClick={() => setDeleteTarget(a.id)} className="rounded p-1 text-sub hover:text-err" aria-label="Delete">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-            <Button variant="secondary" size="md" icon={Download} onClick={handleExport} className="hidden sm:inline-flex">Export</Button>
-            <Button variant="primary" size="md" icon={Save} loading={saving} onClick={handleSave}>Save</Button>
-            <Button variant="secondary" size="md" icon={Plus} onClick={() => setConfirmNew(true)}>New Analysis</Button>
-          </div>
-        </div>
-
-        {/* Mobile tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto px-4 pb-2 md:hidden">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              className={`h-9 shrink-0 rounded-lg px-3 text-sm font-medium transition ${activeTab === t.key ? "bg-brand text-white" : "text-sub hover:bg-appbg"}`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </header>
+      <PropWiseHeader
+        activeTab={activeTab}
+        onNavigate={handleNavigate}
+        onNew={() => setConfirmNew(true)}
+        onSave={handleSave}
+        saving={saving}
+        onExport={handleExport}
+        savedAnalyses={savedAnalyses}
+        onLoadSaved={handleLoad}
+        onDeleteSaved={setDeleteTarget}
+        onRefreshSaved={loadSaved}
+        analysisTitle={inputs.title}
+        onRename={(t) => set("title", t)}
+        formatPrice={formatShortPrice}
+      />
 
       {/* Main */}
       <main className="mx-auto max-w-6xl px-4 py-6">
@@ -281,7 +234,7 @@ export default function Home() {
 
             {activeTab === "affordability" && <AffordabilityTab inputs={inputs} set={set} r={r} />}
             {activeTab === "costs" && <PropertyCostsTab inputs={inputs} set={set} r={r} />}
-            {activeTab === "investment" && <InvestmentTab inputs={inputs} set={set} r={r} />}
+            {activeTab === "investment" && <InvestmentTab inputs={inputs} set={set} r={r} sub={invSub} setSub={setInvSub} />}
           </>
         )}
       </main>

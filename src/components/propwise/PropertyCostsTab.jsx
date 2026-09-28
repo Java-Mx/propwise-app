@@ -25,6 +25,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
       {!has && <Alert tone="info">Enter a property price in the Affordability tab to see cost totals alongside your loan.</Alert>}
 
       <CostSection
+        id="costs-monthly"
         title="Monthly Costs"
         section="monthly"
         categories={MONTHLY_CATEGORIES}
@@ -35,6 +36,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
         allowFrequency
       />
       <CostSection
+        id="costs-annual"
         title="Annual Costs"
         section="annual"
         categories={ANNUAL_CATEGORIES}
@@ -45,6 +47,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
         allowFrequency
       />
       <CostSection
+        id="costs-onetime"
         title="One-Time Costs"
         section="onetime"
         categories={ONETIME_CATEGORIES}
@@ -55,7 +58,7 @@ export default function PropertyCostsTab({ inputs, set, r }) {
       />
 
       {/* Totals */}
-      <Section title="Cost Summary" subtitle="Totals across all added costs.">
+      <Section id="costs-summary" title="Cost Summary" subtitle="Totals across all added costs.">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <ResultCard label="Total Monthly Cost" value={formatCompact(r.totalMonthlyCost)} sub="incl. EMI" emphasis />
           <ResultCard label="Total Annual Cost" value={formatCompact(r.estimatedAnnualPropertyCost)} sub="monthly × 12" />
@@ -75,11 +78,12 @@ export default function PropertyCostsTab({ inputs, set, r }) {
   );
 }
 
-function CostSection({ title, section, categories, costs, onAdd, onUpdate, onRemove, allowFrequency }) {
+function CostSection({ id, title, section, categories, costs, onAdd, onUpdate, onRemove, allowFrequency }) {
   const items = costs.filter((c) => c.section === section);
   const freqOptions = section === "onetime" ? ["One-Time"] : FREQUENCIES.filter((f) => f !== "One-Time");
   return (
     <Section
+      id={id}
       title={title}
       subtitle={`Add the ${title.toLowerCase()} that apply to your purchase.`}
       right={<Button variant="secondary" size="sm" icon={Plus} onClick={onAdd}>Add Cost</Button>}
