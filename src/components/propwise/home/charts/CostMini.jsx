@@ -48,7 +48,7 @@ export default function CostMini() {
         {illustrative && <IllustrativePill />}
       </div>
 
-      <div className={isMobile ? "mt-4 flex flex-col items-center gap-5" : "mt-4 flex items-center gap-6"}>
+      <div className="mt-4 flex flex-col items-center">
         <Ring
           size={isMobile ? 196 : 218}
           stroke={18}
@@ -58,7 +58,7 @@ export default function CostMini() {
           centerMainClass="text-ink text-xl"
           centerBottom="per month"
         />
-        <div className={isMobile ? "w-full space-y-2.5" : "flex-1 space-y-2.5"}>
+        <div className="mt-4 w-full space-y-2.5">
           <BreakdownRow label="EMI" value={formatINR(d.emi)} color={t.series.emi} />
           <BreakdownRow label="Maintenance" value={formatINR(d.maintenance)} color={t.series.maintenance} />
           <BreakdownRow label="Other" value={formatINR(d.other)} color={t.series.other} />
