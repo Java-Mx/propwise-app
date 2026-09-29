@@ -1,135 +1,124 @@
 import React, { useState, useMemo } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { cn } from "@/lib/utils";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
+import { useChartTheme } from "@/lib/chartTheme";
 import { formatINR, formatCompact, num } from "@/lib/finance";
 import { demoProjection } from "@/lib/demoData";
-import ChartCard from "@/components/propwise/charts/ChartCard";
+import { IllustrativePill, LegendDot, MetricPill } from "./primitives";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SPANS = [5, 10, 15, 20];
 
-// "What happens over time?" — projection line chart (Property Value / Loan Balance / Equity).
-// When the user has entered nothing, an ILLUSTRATIVE example is shown instead.
+// "What happens over time?" — axis-free wealth trajectory.
+// Three smooth lines (Property Value / Loan Balance / Estimated Equity),
+// compact pill time selector, dot legend, three updating metric pills.
 export default function InvestmentMini() {
   const { r } = useAnalysis();
   const t = useChartTheme();
-  const maxYear = r.yearly.length || 0;
+  const isMobile = useIsMobile();
   const [span, setSpan] = useState(20);
-  const [showAssumptions, setShowAssumptions] = useState(false);
+  const illustrative = !r.hasInputs;
 
-  const horizon = Math.min(SPANS.includes(span) ? span : SPANS.find((s) => s <= maxYear) || 5, Math.max(maxYear, 5));
-
-  const data = useMemo(() => {
-    if (!r.hasInputs) return [];
-    const base = [{ year: 0, propertyValue: Math.round(r.price), loanBalance: Math.round(r.actualLoan), equity: Math.round(r.price - r.actualLoan) }];
-    r.yearly.filter((d) => d.year <= horizon).forEach((d) => {
-      base.push({ year: d.year, propertyValue: d.propertyValue, loanBalance: d.loanBalance, equity: d.equity });
-    });
-    return base;
-  }, [r.hasInputs, r.price, r.actualLoan, r.yearly, horizon]);
-
-  // --- Illustrative example when no user data ---
-  if (!r.hasInputs) {
-    const demo = demoProjection();
-    return (
-      <div>
-        <ChartCard illustrative label="Illustrative example — not your data">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={demo} margin={{ top: 4, right: 6, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
-              <XAxis dataKey="year" tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
-              <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={42} stroke={t.grid} />
-              <Tooltip
-                contentStyle={tooltipStyle(t)}
-                formatter={(value, name) => [formatINR(value), name]}
-                labelFormatter={(y) => `Year ${y} · Illustrative`}
-              />
-              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
-              <Line type="monotone" dataKey="propertyValue" name="Property Value" stroke={t.series.value} strokeWidth={1.5} dot={false} />
-              <Line type="monotone" dataKey="loanBalance" name="Loan Balance" stroke={t.series.loan} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
-              <Line type="monotone" dataKey="equity" name="Estimated Equity" stroke={t.series.equity} strokeWidth={2.5} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <SummaryStat label="Property" value={formatCompact(demo[demo.length - 1].propertyValue)} color={t.series.value} />
-          <SummaryStat label="Loan" value={formatCompact(demo[demo.length - 1].loanBalance)} color={t.series.loan} />
-          <SummaryStat label="Equity" value={formatCompact(demo[demo.length - 1].equity)} color={t.series.equity} emphasis />
-        </div>
-      </div>
+  const full = useMemo(() => {
+    if (illustrative) return demoProjection();
+    const base = [
+      { year: 0, propertyValue: Math.round(r.price), loanBalance: Math.round(r.actualLoan), equity: Math.round(r.price - r.actualLoan) },
+    ];
+    r.yearly.forEach((d) =>
+      base.push({ year: d.year, propertyValue: d.propertyValue, loanBalance: d.loanBalance, equity: d.equity })
     );
-  }
+    return base;
+  }, [illustrative, r.price, r.actualLoan, r.yearly]);
 
-  // --- Real data ---
+  const maxYear = full.length - 1;
+  const horizon = Math.min(span, maxYear);
+  const data = full.filter((d) => d.year <= horizon);
   const last = data[data.length - 1] || {};
 
   return (
-    <>
-      <div className="flex h-[200px] flex-col rounded-xl border border-line bg-pagebg p-3">
-        <div className="mb-2 inline-flex self-start rounded-lg border border-line bg-white p-0.5">
-          {SPANS.map((y) => {
-            const disabled = y > maxYear && maxYear > 0;
-            const active = horizon === y;
-            return (
-              <button
-                key={y}
-                disabled={disabled}
-                onClick={() => setSpan(y)}
-                className={`h-7 rounded-md px-3 text-xs font-medium transition ${active ? "bg-jade text-white" : "text-sub hover:text-ink disabled:opacity-40 disabled:hover:text-sub"}`}
-              >
-                {y}Y
-              </button>
-            );
-          })}
-        </div>
-        <ResponsiveContainer width="100%" height={140}>
-          <LineChart data={data} margin={{ top: 4, right: 6, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
-            <XAxis dataKey="year" tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
-            <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={42} stroke={t.grid} />
-            <Tooltip
-              contentStyle={tooltipStyle(t)}
-              formatter={(value, name) => [formatINR(value), name]}
-              labelFormatter={(y) => `Year ${y}`}
-            />
-            <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
-            <Line type="monotone" dataKey="propertyValue" name="Property Value" stroke={t.series.value} strokeWidth={1.5} dot={false} />
-            <Line type="monotone" dataKey="loanBalance" name="Loan Balance" stroke={t.series.loan} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
-            <Line type="monotone" dataKey="equity" name="Estimated Equity" stroke={t.series.equity} strokeWidth={2.5} dot={false} />
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-sub">{horizon}-year projection</span>
+        {illustrative && <IllustrativePill />}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {SPANS.map((y) => {
+          const disabled = y > maxYear && maxYear > 0;
+          const active = span === y;
+          return (
+            <button
+              key={y}
+              type="button"
+              disabled={disabled}
+              onClick={() => setSpan(y)}
+              className={cn(
+                "h-7 rounded-full px-3 text-xs font-medium transition",
+                active ? "bg-jade text-white" : "border border-line text-sub hover:text-ink disabled:opacity-40 disabled:hover:text-sub"
+              )}
+            >
+              {y}Y
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+        <LegendDot color={t.series.value} label="Property Value" />
+        <LegendDot color={t.series.loan} label="Loan Balance" />
+        <LegendDot color={t.series.equity} label="Estimated Equity" strong />
+      </div>
+
+      <div className="mt-1" style={{ height: isMobile ? 180 : 200 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 6, right: 8, left: 8, bottom: 0 }}>
+            <XAxis dataKey="year" hide />
+            <Tooltip content={<ProjTooltip t={t} illustrative={illustrative} />} offset={20} />
+            <Line type="monotone" dataKey="propertyValue" stroke={t.series.value} strokeWidth={2} dot={false} isAnimationActive animationDuration={700} />
+            <Line type="monotone" dataKey="loanBalance" stroke={t.series.loan} strokeWidth={2} dot={false} strokeDasharray="5 4" isAnimationActive animationDuration={800} animationBegin={120} />
+            <Line type="monotone" dataKey="equity" stroke={t.series.equity} strokeWidth={2.75} dot={false} isAnimationActive animationDuration={900} animationBegin={220} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <div className="text-xs text-sub">At year {last.year}</div>
-        <div className="grid grid-cols-3 gap-2">
-          <SummaryStat label="Property" value={formatCompact(last.propertyValue)} color={t.series.value} />
-          <SummaryStat label="Loan" value={formatCompact(last.loanBalance)} color={t.series.loan} />
-          <SummaryStat label="Equity" value={formatCompact(last.equity)} color={t.series.equity} emphasis />
-        </div>
-        <div className="flex items-center justify-between pt-0.5">
-          <span className="text-[11px] text-sub">Based on your inputs</span>
-          <button onClick={() => setShowAssumptions((s) => !s)} className="text-[11px] font-medium text-jade hover:underline">
-            {showAssumptions ? "Hide assumptions" : "View assumptions"}
-          </button>
-        </div>
-        {showAssumptions && (
-          <div className="rounded-lg border border-line bg-pagebg p-2.5 text-[11px] leading-relaxed text-sub">
-            Property value uses your appreciation rate; loan balance uses the amortization schedule; estimated equity = property value − remaining loan.
-          </div>
-        )}
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <MetricPill label="Property" value={formatCompact(last.propertyValue)} color={t.series.value} />
+        <MetricPill label="Loan" value={formatCompact(last.loanBalance)} color={t.series.loan} />
+        <MetricPill label="Equity" value={formatCompact(last.equity)} color={t.series.equity} emphasis />
       </div>
-    </>
+
+      {illustrative && <p className="mt-2 text-[11px] text-sub">Illustrative example — not your data.</p>}
+    </div>
   );
 }
 
-function SummaryStat({ label, value, color, emphasis }) {
+function ProjTooltip({ active, payload, label, t, illustrative }) {
+  if (!active || !payload || !payload.length) return null;
+  const get = (k) => payload.find((p) => p.dataKey === k)?.value;
   return (
-    <div className="rounded-lg border border-line bg-white px-2.5 py-2">
-      <div className="flex items-center gap-1.5 text-[11px] text-sub">
-        <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: color }} /> {label}
+    <div
+      className="rounded-lg p-2.5 text-xs shadow-lg"
+      style={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, color: t.tooltipText }}
+    >
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-70">
+        Year {label}{illustrative ? " · Illustrative" : ""}
       </div>
-      <div className={`mt-1 text-sm font-semibold ${emphasis ? "text-jade" : "text-ink"}`}>{value}</div>
+      <TipRow color={t.series.value} label="Property Value" value={formatINR(get("propertyValue"))} />
+      <TipRow color={t.series.loan} label="Loan Balance" value={formatINR(get("loanBalance"))} />
+      <TipRow color={t.series.equity} label="Estimated Equity" value={formatINR(get("equity"))} />
+    </div>
+  );
+}
+
+function TipRow({ color, label, value }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-0.5">
+      <span className="flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        {label}
+      </span>
+      <span className="font-semibold">{value}</span>
     </div>
   );
 }

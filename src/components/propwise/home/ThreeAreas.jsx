@@ -7,8 +7,7 @@ import CostMini from "@/components/propwise/home/charts/CostMini";
 import InvestmentMini from "@/components/propwise/home/charts/InvestmentMini";
 
 // Three analysis cards as one cohesive design system:
-// [Visualization 200px] → [small metric] → [Title] → [Description] → [CTA (bottom-aligned)]
-// Identical radius, padding, border, shadow and chart area across all three.
+// [Visual + small metric/legend] → [Title] → [Description] → [Action (bottom-aligned)]
 export default function ThreeAreas() {
   const navigate = useNavigate();
   return (
@@ -23,25 +22,25 @@ export default function ThreeAreas() {
         </Reveal>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card onClick={() => navigate("/analysis/affordability")}>
+          <Card onClick={() => navigate("/analysis/affordability")} cta="Explore affordability">
             <AffordabilityMini />
-            <h3 className="mt-3 text-xl font-bold text-ink">Can I afford it?</h3>
+            <h3 className="mt-4 text-xl font-bold text-ink">Can I afford it?</h3>
             <p className="mt-1.5 text-sm text-sub">See your loan, EMI and monthly income commitment.</p>
-            <CTA />
+            <CTA label="Explore affordability" />
           </Card>
 
-          <Card onClick={() => navigate("/analysis/property-costs")}>
+          <Card onClick={() => navigate("/analysis/property-costs")} cta="Explore property costs">
             <CostMini />
-            <h3 className="mt-3 text-xl font-bold text-ink">What will it really cost?</h3>
+            <h3 className="mt-4 text-xl font-bold text-ink">What will it really cost?</h3>
             <p className="mt-1.5 text-sm text-sub">See EMI, maintenance and ownership costs together.</p>
-            <CTA />
+            <CTA label="Explore property costs" />
           </Card>
 
           <Card onClick={() => navigate("/analysis/investment")} className="md:col-span-2 lg:col-span-1">
             <InvestmentMini />
-            <h3 className="mt-3 text-xl font-bold text-ink">What happens over time?</h3>
+            <h3 className="mt-4 text-xl font-bold text-ink">What happens over time?</h3>
             <p className="mt-1.5 text-sm text-sub">Property value, loan balance and equity over time.</p>
-            <CTA />
+            <CTA label="Explore investment" />
           </Card>
         </div>
       </div>
@@ -54,7 +53,7 @@ function Card({ children, onClick, className }) {
     <Reveal className="h-full">
       <button
         onClick={onClick}
-        className={`group flex h-full w-full flex-col rounded-[22px] border border-line bg-white p-7 text-left shadow-[0_8px_30px_rgba(24,35,58,0.06)] transition-all duration-300 hover:-translate-y-[3px] hover:border-jade/40 hover:shadow-[0_14px_34px_rgba(24,35,58,0.09)] ${className || ""}`}
+        className={`group flex h-full w-full flex-col rounded-[22px] border border-line bg-white p-6 text-left shadow-[0_8px_30px_rgba(24,35,58,0.06)] transition-all duration-300 hover:-translate-y-[3px] hover:border-jade/40 hover:shadow-[0_14px_34px_rgba(24,35,58,0.09)] ${className || ""}`}
       >
         {children}
       </button>
@@ -62,10 +61,10 @@ function Card({ children, onClick, className }) {
   );
 }
 
-function CTA() {
+function CTA({ label }) {
   return (
     <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-jade">
-      See the calculation
+      {label}
       <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-[3px]" />
     </span>
   );
