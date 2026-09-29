@@ -8,8 +8,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const MAINT_CATS = ["Maintenance", "Society Charges", "Property Management", "Maintenance Reserve"];
 
-// "What will it really cost?" — cost composition ring (EMI / Maintenance / Other)
-// with a dominant-share center label and a breakdown list.
+// "What will it really cost?" — large cost-composition donut (EMI/Maintenance/Other)
+// with a dominant total in the center and a properly aligned breakdown.
 export default function CostMini() {
   const { r, inputs } = useAnalysis();
   const t = useChartTheme();
@@ -48,26 +48,26 @@ export default function CostMini() {
         {illustrative && <IllustrativePill />}
       </div>
 
-      <div className={isMobile ? "mt-4 flex flex-col items-center" : "mt-4 flex items-center gap-5"}>
+      <div className={isMobile ? "mt-4 flex flex-col items-center gap-5" : "mt-4 flex items-center gap-6"}>
         <Ring
-          size={isMobile ? 124 : 116}
-          stroke={13}
+          size={isMobile ? 196 : 218}
+          stroke={18}
           trackColor={t.grid}
           segments={ringSegments}
-          centerMain={`${Math.round(emiPct * 100)}%`}
-          centerBottom="EMI"
+          centerMain={formatINR(d.total)}
+          centerMainClass="text-ink text-xl"
+          centerBottom="per month"
         />
-        <div className={isMobile ? "mt-3 w-full space-y-1.5 text-sm" : "space-y-1.5 text-sm"}>
+        <div className={isMobile ? "w-full space-y-2.5" : "flex-1 space-y-2.5"}>
           <BreakdownRow label="EMI" value={formatINR(d.emi)} color={t.series.emi} />
           <BreakdownRow label="Maintenance" value={formatINR(d.maintenance)} color={t.series.maintenance} />
           <BreakdownRow label="Other" value={formatINR(d.other)} color={t.series.other} />
         </div>
       </div>
 
-      <div className="mt-4 flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-ink">{formatINR(d.total)}</span>
-        <span className="text-sm text-sub">/ month</span>
-      </div>
+      <p className="mt-4 text-xs text-sub">
+        <span className="font-semibold tabular-nums text-ink">{Math.round(emiPct * 100)}%</span> of monthly ownership cost is EMI
+      </p>
 
       {illustrative && <p className="mt-2 text-[11px] text-sub">Illustrative example — not your data.</p>}
     </div>

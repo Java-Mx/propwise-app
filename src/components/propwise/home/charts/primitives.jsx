@@ -14,54 +14,22 @@ export function IllustrativePill({ className }) {
   );
 }
 
-// Colored dot + label (+ optional value) legend chip.
-export function LegendDot({ color, label, value, strong }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-sub">
-      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-      <span className={strong ? "font-medium text-ink" : ""}>{label}</span>
-      {value != null && <span className="font-medium text-ink">{value}</span>}
-    </span>
-  );
-}
-
-// Compact metric pill used below the investment graph.
+// Compact metric card — colored dot + label + value. Doubles as the graph legend.
 export function MetricPill({ label, value, color, emphasis }) {
   return (
-    <div className="rounded-xl border border-line bg-pagebg px-2.5 py-2">
-      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-sub">
+    <div className="flex flex-col justify-center rounded-xl border border-line bg-pagebg px-3" style={{ minHeight: 72 }}>
+      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-sub">
         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
         {label}
       </div>
-      <div className={cn("mt-1 text-sm font-semibold", emphasis ? "text-jade" : "text-ink")}>{value}</div>
-    </div>
-  );
-}
-
-// Animated horizontal allocation bar with rounded, gradient-tinted segments.
-export function SegmentedBar({ segments, height = 14 }) {
-  const reduce = useReducedMotion();
-  const visible = segments.filter((s) => s.value > 0.0001);
-  return (
-    <div className="flex w-full overflow-hidden rounded-full bg-pagebg shadow-[inset_0_1px_2px_rgba(24,35,58,0.06)]" style={{ height }}>
-      {visible.map((s, i) => (
-        <motion.div
-          key={i}
-          className="h-full"
-          style={{ background: `linear-gradient(180deg, ${s.color}, ${s.color})` }}
-          initial={reduce ? false : { width: 0 }}
-          whileInView={reduce ? {} : { width: `${(s.value * 100).toFixed(2)}%` }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-        />
-      ))}
+      <div className={cn("mt-1 text-base font-semibold tabular-nums", emphasis ? "text-jade" : "text-ink")}>{value}</div>
     </div>
   );
 }
 
 // Animated SVG ring (donut). Single or multi-segment. Center label overlaid.
 // segments: [{ value (0..1 fraction), color }]. Animates each arc once on view.
-export function Ring({ size = 120, stroke = 13, segments, trackColor, centerTop, centerMain, centerBottom, centerMainClass }) {
+export function Ring({ size = 120, stroke = 14, segments, trackColor, centerTop, centerMain, centerBottom, centerMainClass }) {
   const reduce = useReducedMotion();
   const cx = size / 2, cy = size / 2, r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -83,29 +51,37 @@ export function Ring({ size = 120, stroke = 13, segments, trackColor, centerTop,
               initial={reduce ? false : { strokeDashoffset: len }}
               whileInView={reduce ? {} : { strokeDashoffset: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.9, delay: 0.1 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.85, delay: 0.1 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
             />
           );
         })}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center leading-none">
         {centerTop && <span className="text-[10px] font-medium uppercase tracking-wide text-sub">{centerTop}</span>}
-        {centerMain && <span className={cn("text-2xl font-bold", centerMainClass || "text-ink")}>{centerMain}</span>}
+        {centerMain && <span className={cn("font-bold tabular-nums", centerMainClass || "text-ink")}>{centerMain}</span>}
         {centerBottom && <span className="mt-1 text-[10px] font-medium uppercase tracking-wide text-sub">{centerBottom}</span>}
       </div>
     </div>
   );
 }
 
-// Labelled value row with a colored dot (used in afford / cost breakdowns).
+// Two-column aligned breakdown row: dot+label (left) · value (right).
 export function BreakdownRow({ label, value, color }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="flex items-center gap-1.5 text-sub">
-        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-        {label}
-      </span>
-      <span className="font-medium text-ink">{value}</span>
+    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+      <span className="text-sm text-sub">{label}</span>
+      <span className="text-sm font-semibold tabular-nums text-ink">{value}</span>
+    </div>
+  );
+}
+
+// Key figure block — label over value, used for the primary monetary figures.
+export function Figure({ label, value, emphasis, className }) {
+  return (
+    <div className={className}>
+      <div className="text-[11px] font-medium uppercase tracking-wide text-sub">{label}</div>
+      <div className={cn("mt-0.5 font-bold tabular-nums", emphasis ? "text-jade text-2xl" : "text-ink text-lg")}>{value}</div>
     </div>
   );
 }

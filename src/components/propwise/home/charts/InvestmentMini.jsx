@@ -5,14 +5,13 @@ import { useAnalysis } from "@/lib/AnalysisContext";
 import { useChartTheme } from "@/lib/chartTheme";
 import { formatINR, formatCompact, num } from "@/lib/finance";
 import { demoProjection } from "@/lib/demoData";
-import { IllustrativePill, LegendDot, MetricPill } from "./primitives";
+import { IllustrativePill, MetricPill } from "./primitives";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const SPANS = [5, 10, 15, 20];
 
 // "What happens over time?" — axis-free wealth trajectory.
-// Three smooth lines (Property Value / Loan Balance / Estimated Equity),
-// compact pill time selector, dot legend, three updating metric pills.
+// Timeframe pills → large smooth graph → three updating metric cards (also the legend).
 export default function InvestmentMini() {
   const { r } = useAnalysis();
   const t = useChartTheme();
@@ -54,7 +53,7 @@ export default function InvestmentMini() {
               disabled={disabled}
               onClick={() => setSpan(y)}
               className={cn(
-                "h-7 rounded-full px-3 text-xs font-medium transition",
+                "h-9 rounded-full px-3.5 text-xs font-medium transition",
                 active ? "bg-jade text-white" : "border border-line text-sub hover:text-ink disabled:opacity-40 disabled:hover:text-sub"
               )}
             >
@@ -64,25 +63,19 @@ export default function InvestmentMini() {
         })}
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-        <LegendDot color={t.series.value} label="Property Value" />
-        <LegendDot color={t.series.loan} label="Loan Balance" />
-        <LegendDot color={t.series.equity} label="Estimated Equity" strong />
-      </div>
-
-      <div className="mt-1" style={{ height: isMobile ? 180 : 200 }}>
+      <div className="mt-3 rounded-xl bg-pagebg p-2" style={{ height: isMobile ? 232 : 272 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 6, right: 8, left: 8, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 8, right: 10, left: 10, bottom: 4 }}>
             <XAxis dataKey="year" hide />
             <Tooltip content={<ProjTooltip t={t} illustrative={illustrative} />} offset={20} />
-            <Line type="monotone" dataKey="propertyValue" stroke={t.series.value} strokeWidth={2} dot={false} isAnimationActive animationDuration={700} />
+            <Line type="monotone" dataKey="propertyValue" stroke={t.series.value} strokeWidth={2.25} dot={false} isAnimationActive animationDuration={700} />
             <Line type="monotone" dataKey="loanBalance" stroke={t.series.loan} strokeWidth={2} dot={false} strokeDasharray="5 4" isAnimationActive animationDuration={800} animationBegin={120} />
             <Line type="monotone" dataKey="equity" stroke={t.series.equity} strokeWidth={2.75} dot={false} isAnimationActive animationDuration={900} animationBegin={220} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2.5">
         <MetricPill label="Property" value={formatCompact(last.propertyValue)} color={t.series.value} />
         <MetricPill label="Loan" value={formatCompact(last.loanBalance)} color={t.series.loan} />
         <MetricPill label="Equity" value={formatCompact(last.equity)} color={t.series.equity} emphasis />
@@ -99,14 +92,14 @@ function ProjTooltip({ active, payload, label, t, illustrative }) {
   return (
     <div
       className="rounded-lg p-2.5 text-xs shadow-lg"
-      style={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, color: t.tooltipText }}
+      style={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, color: t.tooltipText, minWidth: 150 }}
     >
       <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-70">
         Year {label}{illustrative ? " · Illustrative" : ""}
       </div>
       <TipRow color={t.series.value} label="Property Value" value={formatINR(get("propertyValue"))} />
       <TipRow color={t.series.loan} label="Loan Balance" value={formatINR(get("loanBalance"))} />
-      <TipRow color={t.series.equity} label="Estimated Equity" value={formatINR(get("equity"))} />
+      <TipRow color={t.series.equity} label="Equity" value={formatINR(get("equity"))} />
     </div>
   );
 }
@@ -118,7 +111,7 @@ function TipRow({ color, label, value }) {
         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
         {label}
       </span>
-      <span className="font-semibold">{value}</span>
+      <span className="font-semibold tabular-nums">{value}</span>
     </div>
   );
 }
