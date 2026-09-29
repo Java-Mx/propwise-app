@@ -230,9 +230,9 @@ export function ResultCard({ label, value, sub, emphasis = false, tone }) {
       "rounded-xl border p-4",
       green ? "border-jade bg-jade text-white" : emphasis ? "border-brand bg-brand text-white" : "border-line bg-white"
     )}>
-      <div className={cn("text-xs font-medium uppercase tracking-wide", filled ? "text-white/70" : "text-sub")}>{label}</div>
+      <div className={cn("text-xs font-medium uppercase tracking-wide", filled ? "text-white/80" : "text-sub")}>{label}</div>
       <div className={cn("mt-1 text-xl font-semibold", valueColor)}>{value}</div>
-      {sub && <div className={cn("mt-1 text-xs", filled ? "text-white/70" : "text-sub")}>{sub}</div>}
+      {sub && <div className={cn("mt-1 text-xs", filled ? "text-white/80" : "text-sub")}>{sub}</div>}
     </div>
   );
 }

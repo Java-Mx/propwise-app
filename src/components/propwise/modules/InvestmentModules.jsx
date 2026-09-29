@@ -215,7 +215,7 @@ export function NetBenefitModule({ r }) {
       </div>
       <Divider />
       <div className="rounded-xl p-4 text-white" style={{ backgroundColor: color }}>
-        <div className="text-xs uppercase tracking-wide text-white/70">Monthly Net {monthlyNet >= 0 ? "Benefit" : "Cost"}</div>
+        <div className="text-xs uppercase tracking-wide text-white/80">Monthly Net {monthlyNet >= 0 ? "Benefit" : "Cost"}</div>
         <div className="mt-1 text-3xl font-semibold">{formatINR(Math.abs(monthlyNet))}</div>
       </div>
       {r.monthlyRent > 0 && (

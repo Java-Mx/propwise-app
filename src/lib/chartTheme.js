@@ -9,8 +9,8 @@ export function useChartTheme() {
   return {
     // Dark mode = graphite/charcoal system, teal only as accent.
     grid: dark ? "#202832" : "#E1E7EE",
-    axis: dark ? "#7E8998" : "#718096",
-    text: dark ? "#A8B2C0" : "#52627A",
+    axis: dark ? "#929DAC" : "#718096",
+    text: dark ? "#B7C0CC" : "#52627A",
     tooltipBg: dark ? "#111820" : "#FFFFFF",
     tooltipBorder: dark ? "#2A3540" : "#E1E7EE",
     tooltipText: dark ? "#F4F7F7" : "#18233A",

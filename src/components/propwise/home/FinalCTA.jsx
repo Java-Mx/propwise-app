@@ -19,7 +19,7 @@ export default function FinalCTA() {
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Ready to understand the numbers?
           </h2>
-          <p className="mt-3 text-base text-white/70">
+          <p className="mt-3 text-base text-white/80">
             Start with the property you're considering.
           </p>
           <button
