@@ -16,7 +16,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-start">
           <div>
-            <Logo size={32} showTagline />
+            <Logo size={40} showTagline />
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2">
             {links.map((l) => (

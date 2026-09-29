@@ -131,7 +131,7 @@ export default function PropWiseHeader() {
     <header className="sticky top-0 z-30 border-b border-line bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:h-[72px]">
         <button onClick={() => navigate("/")} className="flex items-center text-left" aria-label="PropWise home">
-          <Logo size={32} showTagline />
+          <Logo size={44} showTagline />
         </button>
 
         <nav ref={navRef} className="ml-auto hidden items-center gap-1 md:flex relative">
