@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useAnalysis } from "@/lib/AnalysisContext";
 import PropWiseHeader from "@/components/propwise/PropWiseHeader";
 import ModuleHost from "@/components/propwise/ModuleHost";
-import { Info, Pencil } from "lucide-react";
+import { Info, Pencil, FileQuestion, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/propwise/BottomNav";
 
 const ROUTE_GROUP = {
@@ -14,9 +15,42 @@ const ROUTE_GROUP = {
 
 export default function Analysis() {
   const location = useLocation();
-  const { inputs, set } = useAnalysis();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { inputs, set, loadById, loadError } = useAnalysis();
   const group = ROUTE_GROUP[location.pathname] || "affordability";
   const [titleEditing, setTitleEditing] = useState(false);
+
+  // Direct URL / refresh / shared link → load the saved analysis by id.
+  useEffect(() => {
+    if (id) loadById(id);
+  }, [id, loadById]);
+
+  if (id && loadError === id) {
+    return (
+      <div className="min-h-screen text-ink">
+        <PropWiseHeader />
+        <main className="mx-auto max-w-3xl px-4 py-16">
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-line bg-white px-6 py-16 text-center shadow-sm">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#E8F5F1] text-jade">
+              <FileQuestion className="h-6 w-6" />
+            </div>
+            <h2 className="text-lg font-semibold text-ink">Analysis not found</h2>
+            <p className="mt-1 max-w-sm text-sm text-sub">
+              This analysis may have been deleted, or the link is no longer valid.
+            </p>
+            <button
+              onClick={() => navigate("/analysis/affordability")}
+              className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-jade px-4 text-sm font-semibold text-white hover:bg-[#26786E]"
+            >
+              <Plus className="h-4 w-4" /> Create a new analysis
+            </button>
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-ink">

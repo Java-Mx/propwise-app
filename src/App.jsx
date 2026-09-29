@@ -48,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/analysis/affordability" element={<Analysis />} />
         <Route path="/analysis/property-costs" element={<Analysis />} />
         <Route path="/analysis/investment" element={<Analysis />} />
+        <Route path="/analysis/:id" element={<Analysis />} />
         <Route path="/tools/saved" element={<SavedAnalyses />} />
         <Route path="/tools/sources" element={<Sources />} />
         <Route path="*" element={<PageNotFound />} />

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/propwise/ui";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X, Sun, Moon, Monitor } from "lucide-react";
+import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X, Sun, Moon, Monitor, Home } from "lucide-react";
 import Logo from "@/components/propwise/Logo";
 import { useMobileTools } from "@/components/propwise/MobileTools";
 import { useTheme } from "@/lib/theme";
@@ -135,6 +135,15 @@ export default function PropWiseHeader() {
         </button>
 
         <nav ref={navRef} className="ml-auto hidden items-center gap-1 md:flex relative">
+          <button
+            onClick={() => navigate("/")}
+            className={cn(
+              "inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium transition",
+              location.pathname === "/" ? "bg-[#EEF1F6] text-ink" : "text-steel hover:bg-[#E8F5F1] hover:text-jade"
+            )}
+          >
+            Home
+          </button>
           {desktopMenus.map((menu, idx) => {
             const isOpen = openMenu === menu.key;
             const isActive = menu.type === "tools" ? location.pathname.startsWith("/tools") : currentGroup === menu.key;
@@ -167,6 +176,15 @@ export default function PropWiseHeader() {
       </div>
 
       <nav className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 md:hidden">
+        <button
+          onClick={() => navigate("/")}
+          className={cn(
+            "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
+            location.pathname === "/" ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "border border-line bg-white text-steel"
+          )}
+        >
+          Home
+        </button>
         {GROUP_MENUS.map((menu) => {
           const isActive = currentGroup === menu.key;
           return (
@@ -175,13 +193,22 @@ export default function PropWiseHeader() {
               onClick={() => navigate(GROUPS[menu.key].route)}
               className={cn(
                 "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
-                isActive ? "bg-brand text-white" : "border border-line bg-white text-steel"
+                isActive ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "border border-line bg-white text-steel"
               )}
             >
               {menu.label}
             </button>
           );
         })}
+        <button
+          onClick={() => navigate("/tools/saved")}
+          className={cn(
+            "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
+            location.pathname.startsWith("/tools") ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "border border-line bg-white text-steel"
+          )}
+        >
+          Tools
+        </button>
       </nav>
 
       <Modal open={showSettings} onClose={() => setShowSettings(false)} title="Settings">

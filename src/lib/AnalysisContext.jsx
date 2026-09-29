@@ -5,6 +5,38 @@ import { DEFAULT_INPUTS, computeAll, num, formatINR, formatCompact } from "@/lib
 
 const AnalysisContext = createContext(null);
 
+// Entity number fields — must be stored as numbers, never empty strings
+// (empty strings fail the Analysis schema validation and cause "cannot save").
+const NUM_FIELDS = [
+  "property_price", "amount_saved", "home_loan_percentage", "monthly_income",
+  "existing_emi", "interest_rate", "loan_tenure_years", "monthly_rent",
+  "annual_rent_increase", "vacancy_rate", "annual_rental_maintenance",
+  "other_rental_costs", "annual_appreciation", "projection_years",
+];
+
+// Coerce inputs into a persistence-safe payload matching the Analysis schema.
+function sanitize(inputs) {
+  const out = { ...inputs };
+  NUM_FIELDS.forEach((f) => { out[f] = num(out[f]); });
+  out.costs = Array.isArray(out.costs)
+    ? out.costs.map((c) => ({ ...c, amount: num(c.amount) }))
+    : [];
+  out.scenarios = Array.isArray(out.scenarios)
+    ? out.scenarios.map((s) => ({
+        ...s,
+        property_price: num(s.property_price),
+        amount_saved: num(s.amount_saved),
+        home_loan_percentage: num(s.home_loan_percentage),
+        interest_rate: num(s.interest_rate),
+        loan_tenure_years: num(s.loan_tenure_years),
+        monthly_rent: num(s.monthly_rent),
+      }))
+    : [];
+  out.title = (out.title || "").trim() || "Property Analysis";
+  out.property_type = out.property_type || "Apartment";
+  return out;
+}
+
 export function AnalysisProvider({ children }) {
   const navigate = useNavigate();
   const [inputs, setInputs] = useState({ ...DEFAULT_INPUTS });
@@ -14,6 +46,7 @@ export function AnalysisProvider({ children }) {
   const [confirmNew, setConfirmNew] = useState(false);
   const [namePrompt, setNamePrompt] = useState(false);
   const [nameVal, setNameVal] = useState("");
+  const [loadError, setLoadError] = useState(null);
   const toastTimer = React.useRef(null);
 
   const r = useMemo(() => computeAll(inputs), [inputs]);
@@ -30,16 +63,33 @@ export function AnalysisProvider({ children }) {
     try {
       const list = await base44.entities.Analysis.list("-updated_date", 50);
       setSavedAnalyses(list || []);
-    } catch {
+    } catch (e) {
+      console.error("[PropWise] loadSaved failed", e);
       setSavedAnalyses([]);
     }
   }, []);
 
   useEffect(() => { loadSaved(); }, [loadSaved]);
 
+  // Load a record into state WITHOUT navigating (used by the /analysis/:id route).
+  const loadById = useCallback(async (id) => {
+    try {
+      const rec = await base44.entities.Analysis.get(id);
+      const { id: _i, created_date, updated_date, created_by_id, ...data } = rec;
+      setInputs({ ...DEFAULT_INPUTS, ...data });
+      setCurrentId(id);
+      setLoadError(null);
+      return rec;
+    } catch (e) {
+      console.error("[PropWise] loadById failed", e);
+      setLoadError(id);
+      return null;
+    }
+  }, []);
+
   const doSave = useCallback(async (overrideTitle) => {
     const title = (overrideTitle ?? inputs.title ?? "").trim() || "Property Analysis";
-    const payload = { ...inputs, title };
+    const payload = sanitize({ ...inputs, title });
     try {
       if (currentId) {
         await base44.entities.Analysis.update(currentId, payload);
@@ -48,10 +98,11 @@ export function AnalysisProvider({ children }) {
         setCurrentId(created.id);
       }
       setInputs((p) => ({ ...p, title }));
-      loadSaved();
+      await loadSaved();
       showToast("Analysis saved successfully.");
-    } catch {
-      showToast("Something went wrong. Please try again.", "err");
+    } catch (e) {
+      console.error("[PropWise] save failed", e);
+      showToast("Unable to save this analysis. Please try again.", "err");
     }
   }, [inputs, currentId, loadSaved, showToast]);
 
@@ -70,18 +121,16 @@ export function AnalysisProvider({ children }) {
     if (t) doSave(t);
   }, [nameVal, doSave]);
 
+  // Open from Saved Analyses — loads then navigates to the stable report URL.
   const load = useCallback(async (id) => {
-    try {
-      const rec = await base44.entities.Analysis.get(id);
-      const { id: _i, created_date, updated_date, created_by_id, ...data } = rec;
-      setInputs({ ...DEFAULT_INPUTS, ...data });
-      setCurrentId(id);
+    const ok = await loadById(id);
+    if (ok) {
       showToast("Analysis loaded");
-      navigate("/analysis/affordability");
-    } catch {
+      navigate(`/analysis/${id}`);
+    } else {
       showToast("Could not load analysis", "err");
     }
-  }, [navigate, showToast]);
+  }, [loadById, navigate, showToast]);
 
   const del = useCallback(async (id) => {
     try {
@@ -90,16 +139,57 @@ export function AnalysisProvider({ children }) {
         setCurrentId(null);
         setInputs({ ...DEFAULT_INPUTS });
       }
-      loadSaved();
+      await loadSaved();
       showToast("Analysis deleted");
-    } catch {
+    } catch (e) {
+      console.error("[PropWise] delete failed", e);
       showToast("Could not delete analysis", "err");
+    }
+  }, [currentId, loadSaved, showToast]);
+
+  // Create an independent copy with a new id.
+  const duplicate = useCallback(async (id) => {
+    try {
+      const rec = await base44.entities.Analysis.get(id);
+      const { id: _i, created_date, updated_date, created_by_id, ...data } = rec;
+      const payload = sanitize({ ...data, title: `${(rec.title || "Property Analysis").trim()} — Copy` });
+      await base44.entities.Analysis.create(payload);
+      await loadSaved();
+      showToast("Analysis duplicated");
+    } catch (e) {
+      console.error("[PropWise] duplicate failed", e);
+      showToast("Could not duplicate analysis", "err");
+    }
+  }, [loadSaved, showToast]);
+
+  // Copy a stable shareable URL pointing to the saved analysis id.
+  const copyLink = useCallback(async (id) => {
+    const url = `${window.location.origin}/analysis/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Link copied to clipboard");
+    } catch {
+      showToast("Copy this link: " + url, "warn");
+    }
+  }, [showToast]);
+
+  const rename = useCallback(async (id, newTitle) => {
+    const t = (newTitle || "").trim() || "Property Analysis";
+    try {
+      await base44.entities.Analysis.update(id, { title: t });
+      if (id === currentId) setInputs((p) => ({ ...p, title: t }));
+      await loadSaved();
+      showToast("Analysis renamed");
+    } catch (e) {
+      console.error("[PropWise] rename failed", e);
+      showToast("Could not rename analysis", "err");
     }
   }, [currentId, loadSaved, showToast]);
 
   const doNew = useCallback(() => {
     setInputs({ ...DEFAULT_INPUTS });
     setCurrentId(null);
+    setLoadError(null);
     setConfirmNew(false);
     showToast("New analysis started");
     navigate("/analysis/affordability");
@@ -173,7 +263,13 @@ export function AnalysisProvider({ children }) {
     requestSave,
     confirmNameSave,
     load,
+    loadById,
+    loadError,
+    setLoadError,
     del,
+    duplicate,
+    copyLink,
+    rename,
     requestNew,
     doNew,
     exportReport,

@@ -33,7 +33,7 @@ export default function BottomNav() {
               onClick={() => navigate(it.path)}
               className={cn(
                 "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition active:scale-[0.98]",
-                isActive ? "bg-[#E8F5F1] text-jade" : "text-sub"
+                isActive ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "text-sub"
               )}
             >
               <Icon className="h-5 w-5" />
