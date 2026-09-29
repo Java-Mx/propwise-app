@@ -7,6 +7,7 @@ import {
 } from "@/lib/finance";
 import { ChevronDown, Info } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 
 export function SetupModule({ inputs, set, r }) {
   const has = r.hasInputs;
@@ -157,6 +158,7 @@ export function PayoffExplorer({ r }) {
 }
 
 export function FutureValueModule({ inputs, set, r }) {
+  const t = useChartTheme();
   const [apprec, setApprec] = useState(inputs.annual_appreciation || 5);
   const [years, setYears] = useState(inputs.projection_years || 10);
   const dirty = num(apprec) !== num(inputs.annual_appreciation) || num(years) !== num(inputs.projection_years);
@@ -186,11 +188,11 @@ export function FutureValueModule({ inputs, set, r }) {
       <div className="mt-4 rounded-lg border border-line p-3">
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E7EF" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(y) => `Yr ${y}`} />
-            <YAxis tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} />
-            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={{ borderRadius: 8, border: "1px solid #E2E7EF", fontSize: 12 }} />
-            <Line type="monotone" dataKey="value" name="Property Value" stroke="#2F8F83" strokeWidth={2} dot={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={t.grid} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
+            <YAxis tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} stroke={t.grid} />
+            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={tooltipStyle(t)} />
+            <Line type="monotone" dataKey="value" name="Property Value" stroke={t.series.equity} strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

@@ -6,6 +6,7 @@ import {
 } from "@/lib/finance";
 import { Plus, Trash2, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 
 const PIE_COLORS = ["#18233A", "#52627A", "#2F8F83", "#C58B32", "#B95C5C", "#718096"];
 
@@ -144,6 +145,8 @@ export function AnnualAnalyzer({ inputs, r }) {
 }
 
 export function OneTimeCalculator({ inputs, set, r }) {
+  const t = useChartTheme();
+  const PIE = [t.series.emi, t.series.loan, t.series.maintenance, t.series.warn, t.series.err, t.series.other];
   const costs = inputs.costs || [];
   const onetime = costs.filter((c) => c.section === "onetime");
   const add = (category) => set("costs", [...costs, { id: `c${Date.now()}${Math.random().toString(36).slice(2, 6)}`, section: "onetime", category, amount: "", frequency: "One-Time" }]);
@@ -178,6 +181,23 @@ export function OneTimeCalculator({ inputs, set, r }) {
           ))}
         </div>
       )}
+      {total > 0 && (
+        <div className="mt-4 rounded-lg border border-line p-3">
+          <div className="mb-2 text-sm font-medium text-ink">One-time cost breakdown</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie
+                data={onetime.filter((c) => num(c.amount) > 0).map((c) => ({ name: c.category, value: num(c.amount) }))}
+                dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={2}
+              >
+                {onetime.filter((c) => num(c.amount) > 0).map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
+              </Pie>
+              <Tooltip formatter={(v) => formatINR(v)} contentStyle={tooltipStyle(t)} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
       <Divider />
       <div className="flex items-center justify-between">
         <span className="text-sm text-sub">Property + One-Time</span>
@@ -189,6 +209,8 @@ export function OneTimeCalculator({ inputs, set, r }) {
 
 export function BreakdownModule({ r }) {
   const [view, setView] = useState("lifetime");
+  const t = useChartTheme();
+  const PIE = [t.series.emi, t.series.loan, t.series.maintenance, t.series.warn, t.series.err, t.series.other];
   if (!r.hasInputs || r.actualLoan <= 0) return <Alert tone="info">Enter a property price and loan in Property & Loan Setup first.</Alert>;
   const principal = r.actualLoan;
   const interest = r.totalInterest;
@@ -215,16 +237,16 @@ export function BreakdownModule({ r }) {
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={45} paddingAngle={2}>
-              {data.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+              {data.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
             </Pie>
-            <Tooltip formatter={(v) => formatINR(v)} contentStyle={{ borderRadius: 8, border: "1px solid #E2E7EF", fontSize: 12 }} />
+            <Tooltip formatter={(v) => formatINR(v)} contentStyle={tooltipStyle(t)} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
           </PieChart>
         </ResponsiveContainer>
         <div className="space-y-2">
           {data.map((d, i) => (
             <div key={d.name} className="flex items-center justify-between py-1.5">
-              <span className="flex items-center gap-2 text-sm text-sub"><span className="h-3 w-3 rounded-sm" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />{d.name}</span>
+              <span className="flex items-center gap-2 text-sm text-sub"><span className="h-3 w-3 rounded-sm" style={{ backgroundColor: PIE[i % PIE.length] }} />{d.name}</span>
               <span className="text-sm font-medium text-ink">{formatINR(d.value)}</span>
             </div>
           ))}

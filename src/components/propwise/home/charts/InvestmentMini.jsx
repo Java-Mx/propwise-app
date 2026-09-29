@@ -3,14 +3,13 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useAnalysis } from "@/lib/AnalysisContext";
 import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 import { formatINR, formatCompact, num } from "@/lib/finance";
-import MiniEmpty from "@/components/propwise/home/charts/MiniEmpty";
-import { TrendingUp } from "lucide-react";
+import { demoProjection } from "@/lib/demoData";
+import ChartCard from "@/components/propwise/charts/ChartCard";
 
 const SPANS = [5, 10, 15, 20];
 
-// "What happens over time?" — compact segmented control + projection line chart
-// (Property Value / Loan Balance / Estimated Equity) and a one-line summary.
-// Methodology lives behind a tiny "View assumptions" toggle, not in the card body.
+// "What happens over time?" — projection line chart (Property Value / Loan Balance / Equity).
+// When the user has entered nothing, an ILLUSTRATIVE example is shown instead.
 export default function InvestmentMini() {
   const { r } = useAnalysis();
   const t = useChartTheme();
@@ -29,14 +28,39 @@ export default function InvestmentMini() {
     return base;
   }, [r.hasInputs, r.price, r.actualLoan, r.yearly, horizon]);
 
+  // --- Illustrative example when no user data ---
   if (!r.hasInputs) {
+    const demo = demoProjection();
     return (
-      <div className="h-[200px]">
-        <MiniEmpty title="Complete your property and loan details to see future projections." sub="Value, loan and equity appear here." icon={TrendingUp} className="h-full" />
+      <div>
+        <ChartCard illustrative label="Illustrative example — not your data">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={demo} margin={{ top: 4, right: 6, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
+              <XAxis dataKey="year" tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
+              <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={42} stroke={t.grid} />
+              <Tooltip
+                contentStyle={tooltipStyle(t)}
+                formatter={(value, name) => [formatINR(value), name]}
+                labelFormatter={(y) => `Year ${y} · Illustrative`}
+              />
+              <Legend wrapperStyle={{ fontSize: 10 }} iconSize={8} />
+              <Line type="monotone" dataKey="propertyValue" name="Property Value" stroke={t.series.value} strokeWidth={1.5} dot={false} />
+              <Line type="monotone" dataKey="loanBalance" name="Loan Balance" stroke={t.series.loan} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
+              <Line type="monotone" dataKey="equity" name="Estimated Equity" stroke={t.series.equity} strokeWidth={2.5} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <SummaryStat label="Property" value={formatCompact(demo[demo.length - 1].propertyValue)} color={t.series.value} />
+          <SummaryStat label="Loan" value={formatCompact(demo[demo.length - 1].loanBalance)} color={t.series.loan} />
+          <SummaryStat label="Equity" value={formatCompact(demo[demo.length - 1].equity)} color={t.series.equity} emphasis />
+        </div>
       </div>
     );
   }
 
+  // --- Real data ---
   const last = data[data.length - 1] || {};
 
   return (

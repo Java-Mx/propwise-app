@@ -5,7 +5,8 @@ import {
   RENT_GROWTH_OPTIONS, VACANCY_OPTIONS, PROJECTION_OPTIONS, APPRECIATION_OPTIONS,
 } from "@/lib/finance";
 import ScenarioCompare from "@/components/propwise/ScenarioCompare";
-import { LineChart, Line, Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, Area, AreaChart, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 
 const SCENARIOS = [
   { key: "residence", label: "Primary Residence" },
@@ -52,16 +53,17 @@ export function ProfileModule({ inputs, r }) {
 }
 
 export function CommitmentModule({ r }) {
+  const t = useChartTheme();
   if (!r.hasInputs) return <Alert tone="info">Enter a property price and income in Property & Loan Setup first.</Alert>;
   const income = r.monthlyIncome;
   const existing = r.existingEmi;
   const property = r.totalMonthlyCost;
   const remaining = income - existing - property;
   const bars = [
-    { label: "Income", value: income, color: "#18233A" },
-    { label: "Existing obligations", value: existing, color: "#C58B32" },
-    { label: "Property commitment", value: property, color: "#2F8F83" },
-    { label: "Remaining income", value: remaining, color: remaining >= 0 ? "#718096" : "#B95C5C" },
+    { label: "Income", value: income, color: t.series.emi },
+    { label: "Existing obligations", value: existing, color: t.series.warn },
+    { label: "Property commitment", value: property, color: t.series.equity },
+    { label: "Remaining income", value: remaining, color: remaining >= 0 ? t.series.other : t.series.err },
   ];
   const max = Math.max(income, existing + property, 1);
   return (
@@ -199,6 +201,7 @@ export function RentalCostsModule({ inputs, set, r }) {
 }
 
 export function NetBenefitModule({ r }) {
+  const t = useChartTheme();
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   const monthlyNet = r.netMonthlyRentalBenefit - r.totalMonthlyCost;
   const annualNet = monthlyNet * 12;
@@ -215,6 +218,22 @@ export function NetBenefitModule({ r }) {
         <div className="text-xs uppercase tracking-wide text-white/70">Monthly Net {monthlyNet >= 0 ? "Benefit" : "Cost"}</div>
         <div className="mt-1 text-3xl font-semibold">{formatINR(Math.abs(monthlyNet))}</div>
       </div>
+      {r.monthlyRent > 0 && (
+        <div className="mt-3 rounded-lg border border-line p-3">
+          <div className="mb-2 text-sm font-medium text-ink">Rental income vs ownership cost</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={[{ name: "Monthly", rental: r.netMonthlyRentalBenefit, cost: r.totalMonthlyCost }]} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: t.axis }} stroke={t.grid} />
+              <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={48} stroke={t.grid} />
+              <Tooltip contentStyle={tooltipStyle(t)} formatter={(v, n) => [formatINR(v), n]} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="rental" name="Rental Benefit" fill={t.series.equity} radius={[4, 4, 0, 0]} maxBarSize={48} />
+              <Bar dataKey="cost" name="Ownership Cost" fill={t.series.emi} radius={[4, 4, 0, 0]} maxBarSize={48} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
       <div className="mt-3 grid grid-cols-2 gap-3">
         <ResultCard label="Annual Net" value={formatCompact(annualNet)} tone={tone === "green" ? "green" : tone === "err" ? "error" : undefined} />
         <ResultCard label="Net Outflow" value={formatCompact(r.netMonthlyOutflow)} sub="cost − benefit" />
@@ -225,6 +244,7 @@ export function NetBenefitModule({ r }) {
 }
 
 export function ValueProjectionModule({ inputs, set, r }) {
+  const t = useChartTheme();
   const [apprec, setApprec] = useState(inputs.annual_appreciation || 5);
   const [years, setYears] = useState(inputs.projection_years || 20);
   const dirty = num(apprec) !== num(inputs.annual_appreciation) || num(years) !== num(inputs.projection_years);
@@ -241,12 +261,12 @@ export function ValueProjectionModule({ inputs, set, r }) {
       <div className="mt-4 rounded-lg border border-line p-3">
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-            <defs><linearGradient id="vp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#2F8F83" stopOpacity={0.3} /><stop offset="95%" stopColor="#2F8F83" stopOpacity={0} /></linearGradient></defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E7EF" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(y) => `Yr ${y}`} />
-            <YAxis tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} />
-            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={{ borderRadius: 8, border: "1px solid #E2E7EF", fontSize: 12 }} />
-            <Area type="monotone" dataKey="value" name="Property Value" stroke="#2F8F83" strokeWidth={2} fill="url(#vp)" />
+            <defs><linearGradient id="vp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={t.series.equity} stopOpacity={0.3} /><stop offset="95%" stopColor={t.series.equity} stopOpacity={0} /></linearGradient></defs>
+            <CartesianGrid strokeDasharray="3 3" stroke={t.grid} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
+            <YAxis tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} stroke={t.grid} />
+            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={tooltipStyle(t)} />
+            <Area type="monotone" dataKey="value" name="Property Value" stroke={t.series.equity} strokeWidth={2} fill="url(#vp)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -256,6 +276,7 @@ export function ValueProjectionModule({ inputs, set, r }) {
 }
 
 export function EquityModule({ r }) {
+  const t = useChartTheme();
   const [span, setSpan] = useState(Math.min(inputs_projection(r), r.yearly.length));
   if (!r.hasInputs || r.actualLoan <= 0) return <Alert tone="info">Enter a property price and loan in Property & Loan Setup first.</Alert>;
   const data = r.yearly.filter((d) => d.year <= span);
@@ -269,14 +290,14 @@ export function EquityModule({ r }) {
       <div className="rounded-lg border border-line p-3">
         <ResponsiveContainer width="100%" height={260}>
           <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E7EF" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(y) => `Yr ${y}`} />
-            <YAxis tick={{ fontSize: 11, fill: "#718096" }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} />
-            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={{ borderRadius: 8, border: "1px solid #E2E7EF", fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={t.grid} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(y) => `Yr ${y}`} stroke={t.grid} />
+            <YAxis tick={{ fontSize: 11, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={55} stroke={t.grid} />
+            <Tooltip formatter={(v) => formatINR(v)} labelFormatter={(y) => `Year ${y}`} contentStyle={tooltipStyle(t)} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="propertyValue" name="Property Value" stroke="#18233A" fill="#18233A" fillOpacity={0.06} />
-            <Area type="monotone" dataKey="loanBalance" name="Loan Balance" stroke="#52627A" fill="#52627A" fillOpacity={0.06} />
-            <Area type="monotone" dataKey="equity" name="Equity" stroke="#2F8F83" fill="#2F8F83" fillOpacity={0.06} />
+            <Area type="monotone" dataKey="propertyValue" name="Property Value" stroke={t.series.value} fill={t.series.value} fillOpacity={0.06} />
+            <Area type="monotone" dataKey="loanBalance" name="Loan Balance" stroke={t.series.loan} fill={t.series.loan} fillOpacity={0.06} />
+            <Area type="monotone" dataKey="equity" name="Equity" stroke={t.series.equity} fill={t.series.equity} fillOpacity={0.06} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
