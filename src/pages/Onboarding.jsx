@@ -69,7 +69,7 @@ export default function Onboarding() {
           {/* Step indicator */}
           <div className="mb-6 flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
             <span className="text-jade">Step 1 of 4</span>
-            <span className="text-sub/40">·</span>
+            <span className="text-sub/70">·</span>
             <span className="hidden text-sub sm:inline">{STEPS.join("  ·  ")}</span>
             <span className="text-sub sm:hidden">Basic Information</span>
           </div>

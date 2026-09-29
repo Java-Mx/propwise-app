@@ -81,7 +81,7 @@ export default function Scenarios() {
                         {row.value ? (
                           <span className="text-sm font-semibold text-ink">{row.value}</span>
                         ) : (
-                          <span className="text-xs font-medium text-sub/70">—</span>
+                          <span className="text-xs font-medium text-sub">—</span>
                         )}
                       </div>
                     ))}

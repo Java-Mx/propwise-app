@@ -206,7 +206,7 @@ function Row({ label, value, sub, bold }) {
     <div className="flex items-center justify-between py-1.5">
       <div>
         <span className={`text-sm ${bold ? "font-semibold text-ink" : "text-sub"}`}>{label}</span>
-        {sub && <span className="ml-2 text-xs text-sub/70">{sub}</span>}
+        {sub && <span className="ml-2 text-xs text-sub">{sub}</span>}
       </div>
       <span className={`text-sm font-medium ${bold ? "text-ink" : "text-ink"}`}>{value}</span>
     </div>

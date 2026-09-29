@@ -57,7 +57,7 @@ export default function HowItWorks() {
                   "rounded-2xl border bg-white p-5 transition-all duration-300",
                   isActive
                     ? "border-jade/40 shadow-[0_8px_24px_rgba(47,143,131,0.10)]"
-                    : "border-line opacity-70"
+                    : "border-line"
                 )}
               >
                 <div className="flex items-center gap-2">

@@ -42,7 +42,7 @@ export default function ScenarioCompare({ inputs, set }) {
     }>
       {scenarios.length === 0 ? (
         <div className="rounded-lg border border-dashed border-line bg-appbg px-4 py-10 text-center">
-          <Scale className="mx-auto mb-2 h-6 w-6 text-sub/60" />
+          <Scale className="mx-auto mb-2 h-6 w-6 text-sub" />
           <p className="text-sm text-sub">No scenarios added yet. Add up to 3 to compare.</p>
           <Button variant="primary" size="md" icon={Plus} className="mt-4" onClick={addScenario}>Add Scenario</Button>
         </div>

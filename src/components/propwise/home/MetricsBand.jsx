@@ -32,7 +32,7 @@ export default function MetricsBand() {
                 return (
                   <div key={m.key} className="bg-white p-5">
                     <div className="text-[11px] font-medium uppercase tracking-wide text-sub">{m.label}</div>
-                    <div className={v ? "mt-2 text-2xl font-bold text-ink" : "mt-2 text-2xl font-bold text-sub/40"}>
+                    <div className={v ? "mt-2 text-2xl font-bold text-ink" : "mt-2 text-2xl font-bold text-sub/70"}>
                       {v ?? "—"}
                     </div>
                     <div className="mt-1 text-xs text-sub">{m.sub}</div>

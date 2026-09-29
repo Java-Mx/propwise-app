@@ -53,7 +53,7 @@ export function CostBuilder({ inputs, set }) {
       <button onClick={addCost} className="mb-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-jade text-sm font-semibold text-white active:scale-[0.98] md:hidden"><Plus className="h-4 w-4" /> Add {active.label} Cost</button>
       <div className="hidden justify-end md:flex"><Button variant="primary" size="sm" icon={Plus} onClick={addCost}>Add {active.label} Cost</Button></div>
       {items.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-dashed border-line bg-appbg px-4 py-8 text-center text-sm text-sub"><Wallet className="mx-auto mb-2 h-5 w-5 text-sub/60" />No {active.label.toLowerCase()} costs added yet.</div>
+        <div className="mt-3 rounded-lg border border-dashed border-line bg-appbg px-4 py-8 text-center text-sm text-sub"><Wallet className="mx-auto mb-2 h-5 w-5 text-sub" />No {active.label.toLowerCase()} costs added yet.</div>
       ) : (
         <div className="mt-3 space-y-2.5">
           {items.map((c) => (

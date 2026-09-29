@@ -94,7 +94,7 @@ function ProjTooltip({ active, payload, label, t, illustrative }) {
       className="rounded-lg p-2.5 text-xs shadow-lg"
       style={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, color: t.tooltipText, minWidth: 150 }}
     >
-      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-70">
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-sub">
         Year {label}{illustrative ? " · Illustrative" : ""}
       </div>
       <TipRow color={t.series.value} label="Property Value" value={formatINR(get("propertyValue"))} />
