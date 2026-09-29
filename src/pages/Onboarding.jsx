@@ -11,10 +11,10 @@ import {
 } from "@/lib/finance";
 
 const STEPS = [
-  { key: "basic", label: "Basic Information" },
-  { key: "property", label: "Property Details" },
-  { key: "financial", label: "Financial Details" },
-  { key: "analysis", label: "Analysis" },
+  { key: "basic", label: "BASIC INFORMATION" },
+  { key: "property", label: "PROPERTY DETAILS" },
+  { key: "financial", label: "FINANCIAL DETAILS" },
+  { key: "analysis", label: "ANALYSIS" },
 ];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INPUT_CLS =
