@@ -119,9 +119,9 @@ export default function Onboarding() {
 
         <div className="mx-auto mt-8 w-full max-w-[560px] md:mt-12">
           {/* Step indicator — functional, current step highlighted, completed steps revisitable */}
-          <div className="mb-6 flex flex-col items-center gap-2 text-[11px] font-semibold tracking-[0.14em]">
+          <div className="mb-6 flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
             <div className="flex items-center gap-2">
-              <span className="uppercase text-jade">Step {step} of 4</span>
+              <span className="text-jade">Step {step} of 4</span>
               <span className="text-sub/70">·</span>
               <span className="text-sub sm:hidden">{STEPS[step - 1].label}</span>
               <span className="hidden sm:inline">
