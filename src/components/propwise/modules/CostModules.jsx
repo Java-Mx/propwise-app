@@ -110,12 +110,18 @@ export function MonthlyAnalyzer({ inputs, r }) {
 }
 
 export function AnnualAnalyzer({ inputs, r }) {
+  const t = useChartTheme();
+  const PIE = [t.series.emi, t.series.loan, t.series.maintenance, t.series.warn, t.series.err, t.series.other];
   const [span, setSpan] = useState(1);
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   const annualEmi = r.emi * 12;
   const recurringAnnual = r.recurringMonthly * 12;
   const cats = { ...groupByCategory(inputs.costs, "annual"), ...groupByCategory(inputs.costs, "monthly") };
   const annualOwnership = annualEmi + recurringAnnual;
+  const donutData = [
+    { name: "Annual EMI", value: Math.round(annualEmi) },
+    ...Object.entries(cats).filter(([, v]) => v > 0).map(([k, v]) => ({ name: k, value: Math.round(v * 12) })),
+  ].filter((d) => d.value > 0);
   const emiYears = Math.min(span, r.tenure || span);
   const cumulative = annualEmi * emiYears + recurringAnnual * span;
   return (
@@ -130,6 +136,20 @@ export function AnnualAnalyzer({ inputs, r }) {
         <span className="text-sm font-medium">Total Annual Ownership</span>
         <span className="text-lg font-semibold">{formatINR(annualOwnership)}</span>
       </div>
+      {donutData.length > 1 && (
+        <div className="mt-4 rounded-lg border border-line p-3">
+          <div className="mb-2 text-sm font-medium text-ink">Annual cost composition</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={donutData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={42} paddingAngle={2}>
+                {donutData.map((_, i) => <Cell key={i} fill={PIE[i % PIE.length]} />)}
+              </Pie>
+              <Tooltip formatter={(v) => formatINR(v)} contentStyle={tooltipStyle(t)} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
       <Divider label="Cumulative" />
       <div className="mb-3 flex gap-2">
         {[1, 5, 10, 20].map((s) => (

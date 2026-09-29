@@ -6,8 +6,11 @@ import {
   computeScenarioSummary, num,
 } from "@/lib/finance";
 import { Plus, Trash2, Scale } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 
 export default function ScenarioCompare({ inputs, set }) {
+  const t = useChartTheme();
   const scenarios = inputs.scenarios || [];
   const appreciation = num(inputs.annual_appreciation) || 5;
 
@@ -25,6 +28,13 @@ export default function ScenarioCompare({ inputs, set }) {
   const removeScenario = (idx) => set("scenarios", scenarios.filter((_, i) => i !== idx));
 
   const summaries = scenarios.map((s) => computeScenarioSummary(s, appreciation));
+  const chartData = scenarios.map((s, i) => ({
+    name: s.label,
+    price: summaries[i].price,
+    EMI: Math.round(summaries[i].emi),
+    "Monthly Cost": Math.round(summaries[i].monthlyCost),
+    "Net Outflow": Math.round(summaries[i].netOutflow),
+  })).filter((d) => d.price > 0);
 
   return (
     <Section id="inv-compare" title="Scenario Comparison" subtitle="Compare up to 3 property scenarios side by side." right={
@@ -86,6 +96,23 @@ export default function ScenarioCompare({ inputs, set }) {
               </tbody>
             </table>
           </div>
+          {chartData.length > 0 && (
+            <div className="mt-4 rounded-lg border border-line p-3">
+              <div className="mb-2 text-sm font-medium text-ink">Monthly outflow comparison</div>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={t.grid} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: t.axis }} stroke={t.grid} />
+                  <YAxis tick={{ fontSize: 10, fill: t.axis }} tickFormatter={(v) => formatCompact(v).replace("₹", "")} width={48} stroke={t.grid} />
+                  <Tooltip contentStyle={tooltipStyle(t)} formatter={(v, n) => [formatINR(v), n]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="EMI" fill={t.series.emi} radius={[4, 4, 0, 0]} maxBarSize={48} />
+                  <Bar dataKey="Monthly Cost" fill={t.series.equity} radius={[4, 4, 0, 0]} maxBarSize={48} />
+                  <Bar dataKey="Net Outflow" fill={t.series.warn} radius={[4, 4, 0, 0]} maxBarSize={48} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           <p className="mt-3 text-xs text-sub">Rental benefit assumes 5% vacancy. Future value uses your current appreciation assumption ({formatPct(appreciation)}).</p>
         </>
       )}
