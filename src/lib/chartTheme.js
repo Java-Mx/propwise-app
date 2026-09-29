@@ -7,22 +7,23 @@ export function useChartTheme() {
   const { effective } = useTheme();
   const dark = effective === "dark";
   return {
-    grid: dark ? "#263548" : "#E1E7EE",
-    axis: dark ? "#77869A" : "#718096",
-    text: dark ? "#A9B6C7" : "#52627A",
-    tooltipBg: dark ? "#0D1624" : "#FFFFFF",
-    tooltipBorder: dark ? "#253548" : "#E1E7EE",
-    tooltipText: dark ? "#F4F7FB" : "#18233A",
+    // Dark mode = graphite/charcoal system, teal only as accent.
+    grid: dark ? "#202832" : "#E1E7EE",
+    axis: dark ? "#7E8998" : "#718096",
+    text: dark ? "#A8B2C0" : "#52627A",
+    tooltipBg: dark ? "#111820" : "#FFFFFF",
+    tooltipBorder: dark ? "#2A3540" : "#E1E7EE",
+    tooltipText: dark ? "#F4F7F7" : "#18233A",
     series: {
-      value: dark ? "#8FA8C7" : "#18233A",     // Property value — navy
-      loan: dark ? "#718096" : "#52627A",      // Loan balance — slate
-      equity: dark ? "#49A99A" : "#2F8F83",    // Equity — teal (prominent)
-      emi: dark ? "#8FA8C7" : "#18233A",
-      maintenance: dark ? "#718096" : "#52627A",
-      other: dark ? "#A9B6C7" : "#718096",
+      value: dark ? "#A8BAD2" : "#18233A",     // Property value — light graphite-blue
+      loan: dark ? "#68778D" : "#52627A",      // Loan balance — muted slate
+      equity: dark ? "#4FA89B" : "#2F8F83",    // Equity — teal (prominent accent)
+      emi: dark ? "#A8BAD2" : "#18233A",
+      maintenance: dark ? "#68778D" : "#52627A",
+      other: dark ? "#7E8998" : "#718096",
       warn: dark ? "#D7A04A" : "#C58B32",
       err: dark ? "#D47777" : "#B95C5C",
-      ok: dark ? "#49A99A" : "#2F8F6B",
+      ok: dark ? "#4FA89B" : "#2F8F6B",
     },
   };
 }

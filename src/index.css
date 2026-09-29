@@ -62,48 +62,56 @@
   }
 
   .dark {
-    /* Deep navy / dark slate atmosphere — genuinely dark, not grey */
-    --background: 218 53% 6%;
-    --foreground: 217 41% 97%;
-    --card: 217 47% 10%;
-    --card-foreground: 217 41% 97%;
-    --popover: 213 44% 12%;
-    --popover-foreground: 217 41% 97%;
-    --primary: 171 40% 48%;
-    --primary-foreground: 212 36% 9%;
-    --secondary: 215 43% 14%;
-    --secondary-foreground: 217 41% 97%;
-    --muted: 215 43% 14%;
-    --muted-foreground: 214 15% 53%;
-    --accent: 171 40% 48%;
-    --accent-foreground: 212 36% 9%;
+    /* Premium charcoal / graphite atmosphere — near-black, not navy */
+    --background: 217 33% 5%;          /* #080B10 page */
+    --foreground: 210 20% 96%;        /* #F5F7F8 */
+    --card: 215 32% 7.5%;              /* #0D1219 primary card */
+    --card-foreground: 210 20% 96%;
+    --popover: 215 32% 7.5%;           /* #0D1219 dropdown */
+    --popover-foreground: 210 20% 96%;
+    --primary: 171 36% 24%;            /* #4FA89B teal accent */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 30% 10.6%;       /* #131A23 elevated */
+    --secondary-foreground: 210 20% 96%;
+    --muted: 214 30% 9%;              /* #10161E inner surface */
+    --muted-foreground: 215 9% 27%;    /* #7E8998 muted text */
+    --accent: 171 36% 24%;            /* #4FA89B */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 52% 65%;
     --destructive-foreground: 210 33% 97%;
-    --border: 213 32% 21%;
-    --input: 215 43% 14%;
-    --ring: 171 40% 48%;
-    --chart-1: 215 27% 72%;
-    --chart-2: 171 40% 48%;
-    --chart-3: 214 15% 53%;
+    --border: 213 22% 16%;            /* #202832 */
+    --input: 213 22% 16%;             /* #202832 */
+    --ring: 171 36% 24%;              /* #4FA89B */
+    --chart-1: 214 11% 37%;           /* #A8BAD2 property */
+    --chart-2: 216 15% 24%;           /* #68778D loan */
+    --chart-3: 215 9% 27%;            /* #7E8998 muted */
     --chart-4: 37 64% 57%;
     --chart-5: 0 52% 65%;
-    /* PropWise palette — dark values (deep navy + slate + teal) */
-    --pw-brand: 215 43% 14%;
-    --pw-steel: 214 16% 65%;
-    --pw-jade: 171 40% 48%;
-    --pw-ok: 152 45% 55%;
+    /* PropWise palette — dark values (graphite + slate + teal accent) */
+    --pw-brand: 214 26% 14%;          /* #1B2330 graphite (filled surfaces) */
+    --pw-steel: 215 7% 35%;           /* #A8B2C0 secondary text */
+    --pw-jade: 171 36% 24%;           /* #4FA89B teal accent */
+    --pw-ok: 171 36% 24%;             /* #4FA89B */
     --pw-warn: 37 64% 57%;
     --pw-err: 0 52% 65%;
-    --pw-pagebg: 218 53% 6%;
-    --pw-appbg: 213 44% 12%;
-    --pw-inputbg: 215 43% 14%;
-    --pw-jadebg: 171 38% 15%;
-    --pw-navactive: 215 43% 14%;
-    --pw-ink: 217 41% 97%;
-    --pw-sub: 215 27% 72%;
-    --pw-line: 213 32% 21%;
-    --pw-errbg: 0 29% 16%;
+    --pw-pagebg: 217 33% 5%;          /* #080B10 */
+    --pw-appbg: 214 30% 9%;           /* #10161E inner surface */
+    --pw-inputbg: 214 28% 8%;         /* #0C1118 */
+    --pw-jadebg: 168 24% 11%;         /* #14211E very dark teal surface */
+    --pw-navactive: 213 28% 12%;      /* #151C26 active nav */
+    --pw-ink: 210 20% 96%;            /* #F5F7F8 */
+    --pw-sub: 215 7% 35%;             /* #A8B2C0 */
+    --pw-line: 213 22% 16%;           /* #202832 */
+    --pw-errbg: 0 29% 14%;
     --pw-warnbg: 37 41% 14%;
+    --sidebar-background: 216 29% 7%; /* #0C1016 header */
+    --sidebar-foreground: 215 7% 35%;
+    --sidebar-primary: 171 36% 24%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 213 30% 12%;   /* #151D27 hover */
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 213 22% 16%;
+    --sidebar-ring: 171 36% 24%;
   }
 }
 
@@ -132,14 +140,14 @@
 :root { color-scheme: light; }
 .dark { color-scheme: dark; }
 
-/* Premium deep-navy gradient atmosphere for dark mode (subtle, no neon) */
+/* Premium charcoal/graphite atmosphere for dark mode (no navy, no neon) */
 .dark body {
-  background-color: #070D17;
+  background-color: #080B10;
   background-image:
-    radial-gradient(at 100% 0%, rgba(47,143,131,0.10), transparent 45%),
-    radial-gradient(at 0% 100%, rgba(45,74,112,0.12), transparent 50%),
-    radial-gradient(at 50% 40%, rgba(24,35,58,0.08), transparent 55%);
+    radial-gradient(at 100% 0%, rgba(79,168,155,0.035), transparent 45%),
+    radial-gradient(at 0% 100%, rgba(100,120,140,0.025), transparent 50%);
   background-attachment: fixed;
+  transition: background-color 220ms ease;
 }
 
 /* Additional dark-mode surface overrides for translucent utility classes */
@@ -162,6 +170,24 @@
 .dark .bg-\[\#FFF6E5\] { background-color: hsl(var(--pw-warnbg)); }
 .dark .text-\[\#52627A\] { color: hsl(var(--pw-sub)); }
 
+/* ---------- Dark-mode literal-class additions (charcoal system) ---------- */
+/* Active mobile pills (hardcoded navy in header) → graphite + teal accent */
+.dark .bg-\[\#1A3A37\] { background-color: #151C26; }
+.dark .text-\[\#5BB8A8\] { color: #4FA89B; }
+.dark .ring-\[\#49A99A\] { --tw-ring-color: #4FA89B; }
+/* Primary teal button hover — lighter teal in dark (not the dark #26786E) */
+.dark .hover\:bg-\[\#26786E\]:hover { background-color: #5AB3A5; }
+.dark .hover\:bg-\[\#26776E\]:hover { background-color: #5AB3A5; }
+/* Primary CTA soft shadow in dark */
+.dark button.bg-jade,
+.dark a.bg-jade {
+  box-shadow: 0 8px 24px rgba(79,168,155,0.16);
+}
+/* Secondary surface used inline in a few components → inner graphite */
+.dark .bg-\[\#0F172A\], .dark .bg-\[\#111827\], .dark .bg-\[\#121A2A\], .dark .bg-\[\#101A29\] {
+  background-color: #10161E;
+}
+
 /* ---------- Ambient background system ---------- */
 .pw-grid {
   background-image:
@@ -172,17 +198,17 @@
 }
 .dark .pw-grid {
   background-image:
-    linear-gradient(to right, rgba(130,150,180,0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(130,150,180,0.05) 1px, transparent 1px);
-  opacity: 0.6;
+    linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+  opacity: 0.5;
 }
-.pw-glow { filter: blur(40px); }
+.pw-glow { filter: blur(48px); }
 .pw-glow-navy { background: radial-gradient(circle, rgba(47,76,120,0.05), transparent 62%); }
-.dark .pw-glow-navy { background: radial-gradient(circle, rgba(45,74,112,0.18), transparent 62%); }
+.dark .pw-glow-navy { background: radial-gradient(circle, rgba(100,120,140,0.025), transparent 62%); }
 .pw-glow-teal { background: radial-gradient(circle, rgba(47,143,131,0.05), transparent 62%); }
-.dark .pw-glow-teal { background: radial-gradient(circle, rgba(47,143,131,0.10), transparent 62%); }
+.dark .pw-glow-teal { background: radial-gradient(circle, rgba(79,168,155,0.035), transparent 62%); }
 .pw-glow-mid { opacity: 0; }
-.dark .pw-glow-mid { opacity: 1; background: radial-gradient(circle, rgba(24,35,58,0.12), transparent 62%); }
+.dark .pw-glow-mid { opacity: 1; background: radial-gradient(circle, rgba(100,120,140,0.02), transparent 62%); }
 .pw-sym {
   position: absolute;
   font-weight: 700;
@@ -193,8 +219,8 @@
   animation: pw-drift-a 30s ease-in-out infinite;
 }
 .pw-sym.pw-teal { color: #2F8F83; }
-.dark .pw-sym { color: #8FA8C7; opacity: 0.045; }
-.dark .pw-sym.pw-teal { color: #49A99A; }
+.dark .pw-sym { color: #71808A; opacity: 0.03; }
+.dark .pw-sym.pw-teal { color: #71808A; }
 .pw-sym.pw-b { animation-name: pw-drift-b; }
 .pw-line { position: absolute; opacity: 0.025; }
 .dark .pw-line { opacity: 0.03; }
