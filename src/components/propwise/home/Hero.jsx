@@ -7,7 +7,7 @@ import CalcEngine from "@/components/propwise/home/CalcEngine";
 export default function Hero() {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
-  const start = () => navigate("/analysis/affordability");
+  const start = () => navigate("/analysis/new");
   const how = () => {
     const el = document.getElementById("how-it-works");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });

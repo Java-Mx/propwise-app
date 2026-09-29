@@ -39,8 +39,26 @@ function sanitize(inputs) {
 
 export function AnalysisProvider({ children }) {
   const navigate = useNavigate();
-  const [inputs, setInputs] = useState({ ...DEFAULT_INPUTS });
-  const [currentId, setCurrentId] = useState(null);
+  const [inputs, setInputs] = useState(() => {
+    try {
+      const raw = localStorage.getItem("propwise:active");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.inputs) return { ...DEFAULT_INPUTS, ...parsed.inputs };
+      }
+    } catch (e) { /* ignore */ }
+    return { ...DEFAULT_INPUTS };
+  });
+  const [currentId, setCurrentId] = useState(() => {
+    try {
+      const raw = localStorage.getItem("propwise:active");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.currentId) return parsed.currentId;
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  });
   const [savedAnalyses, setSavedAnalyses] = useState([]);
   const [toast, setToast] = useState(null);
   const [confirmNew, setConfirmNew] = useState(false);
@@ -70,6 +88,14 @@ export function AnalysisProvider({ children }) {
   }, []);
 
   useEffect(() => { loadSaved(); }, [loadSaved]);
+
+  // Persist the active analysis (inputs + id) so a refresh keeps onboarding metadata.
+  useEffect(() => {
+    try {
+      const hasMeta = (inputs.title || "").trim() || (inputs.owner_name || "").trim() || currentId || r.hasInputs;
+      if (hasMeta) localStorage.setItem("propwise:active", JSON.stringify({ inputs, currentId }));
+    } catch (e) { /* ignore */ }
+  }, [inputs, currentId, r.hasInputs]);
 
   // Load a record into state WITHOUT navigating (used by the /analysis/:id route).
   const loadById = useCallback(async (id) => {
@@ -186,19 +212,34 @@ export function AnalysisProvider({ children }) {
     }
   }, [currentId, loadSaved, showToast]);
 
-  const doNew = useCallback(() => {
-    setInputs({ ...DEFAULT_INPUTS });
+  // Onboarding "Continue" — create a fresh analysis context carrying the basic
+  // metadata. One data model: this becomes the active analysis; Save later
+  // persists it (assigning the single id). Onboarding does not pre-save.
+  const startAnalysis = useCallback((meta) => {
+    setInputs({
+      ...DEFAULT_INPUTS,
+      title: meta.reportName || "",
+      owner_name: meta.fullName || "",
+      owner_email: meta.email || "",
+      property_location: meta.location || "",
+    });
     setCurrentId(null);
     setLoadError(null);
-    setConfirmNew(false);
-    showToast("New analysis started");
     navigate("/analysis/affordability");
-  }, [navigate, showToast]);
+  }, [navigate]);
+
+  // "New Analysis" routes to the onboarding page (it does not wipe first;
+  // onboarding wipes on Continue). Confirm first if there is unsaved work.
+  const doNew = useCallback(() => {
+    setConfirmNew(false);
+    navigate("/analysis/new");
+  }, [navigate]);
 
   const requestNew = useCallback(() => {
-    if (r.hasInputs) setConfirmNew(true);
+    // Only prompt when there is unsaved (not yet persisted) work to lose.
+    if (r.hasInputs && !currentId) setConfirmNew(true);
     else doNew();
-  }, [r.hasInputs, doNew]);
+  }, [r.hasInputs, currentId, doNew]);
 
   const exportReport = useCallback(() => {
     if (!r.hasInputs) {
@@ -207,9 +248,11 @@ export function AnalysisProvider({ children }) {
     }
     const lines = [
       `PropWise — Property Analysis Report`,
-      `Generated: ${new Date().toLocaleString()}`,
       ``,
-      `Analysis: ${inputs.title || "Untitled"}`,
+      `Report Name: ${inputs.title || "Untitled"}`,
+      inputs.owner_name ? `Prepared for: ${inputs.owner_name}` : ``,
+      inputs.property_location ? `Property: ${inputs.property_location}` : ``,
+      `Generated: ${new Date().toLocaleString()}`,
       ``,
       `PROPERTY`,
       `  Property price: ${formatINR(r.price)}`,
@@ -272,6 +315,7 @@ export function AnalysisProvider({ children }) {
     rename,
     requestNew,
     doNew,
+    startAnalysis,
     exportReport,
     toast,
     showToast,

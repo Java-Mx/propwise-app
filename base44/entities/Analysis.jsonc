@@ -6,6 +6,18 @@
       "type": "string",
       "default": ""
     },
+    "owner_name": {
+      "type": "string",
+      "default": ""
+    },
+    "owner_email": {
+      "type": "string",
+      "default": ""
+    },
+    "property_location": {
+      "type": "string",
+      "default": ""
+    },
     "property_type": {
       "type": "string",
       "default": "Apartment"

@@ -40,7 +40,7 @@ export default function Analysis() {
               This analysis may have been deleted, or the link is no longer valid.
             </p>
             <button
-              onClick={() => navigate("/analysis/affordability")}
+              onClick={() => navigate("/analysis/new")}
               className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-jade px-4 text-sm font-semibold text-white hover:bg-[#26786E]"
             >
               <Plus className="h-4 w-4" /> Create a new analysis
@@ -57,26 +57,37 @@ export default function Analysis() {
       <PropWiseHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-          {titleEditing ? (
-            <input
-              autoFocus
-              value={inputs.title || ""}
-              onChange={(e) => set("title", e.target.value)}
-              onBlur={() => setTitleEditing(false)}
-              onKeyDown={(e) => e.key === "Enter" && setTitleEditing(false)}
-              placeholder="Analysis name"
-              className="h-10 w-48 rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none focus:border-jade focus:ring-2 focus:ring-jade/15"
-            />
-          ) : (
-            <button
-              onClick={() => setTitleEditing(true)}
-              className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-sm font-medium text-sub hover:text-ink"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              {inputs.title || "Name this analysis"}
-            </button>
-          )}
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sub">Report</div>
+            <div className="mt-0.5 truncate text-base font-semibold text-ink">{inputs.title || "Untitled analysis"}</div>
+            {inputs.owner_name && (
+              <div className="mt-0.5 truncate text-xs text-sub">
+                Prepared for {inputs.owner_name}{inputs.property_location ? ` · ${inputs.property_location}` : ""}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {titleEditing ? (
+              <input
+                autoFocus
+                value={inputs.title || ""}
+                onChange={(e) => set("title", e.target.value)}
+                onBlur={() => setTitleEditing(false)}
+                onKeyDown={(e) => e.key === "Enter" && setTitleEditing(false)}
+                placeholder="Analysis name"
+                className="h-10 w-48 rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none focus:border-jade focus:ring-2 focus:ring-jade/15"
+              />
+            ) : (
+              <button
+                onClick={() => setTitleEditing(true)}
+                className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-sm font-medium text-sub hover:text-ink"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Rename
+              </button>
+            )}
+          </div>
         </div>
 
         <ModuleHost group={group} />

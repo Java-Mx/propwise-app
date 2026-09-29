@@ -7,6 +7,9 @@ export { num };
 // All fields start empty — no demo or preloaded values.
 export const DEFAULT_INPUTS = {
   title: "",
+  owner_name: "",
+  owner_email: "",
+  property_location: "",
   property_type: "Apartment",
   property_price: "",
   amount_saved: "",

@@ -268,7 +268,7 @@ export default function PropWiseHeader() {
       </Modal>
 
       <Modal open={analysis.confirmNew} onClose={() => analysis.setConfirmNew(false)} title="Start a new analysis?">
-        <p className="text-sm text-sub">Your current unsaved information will be cleared.</p>
+        <p className="text-sm text-sub">Your current analysis has unsaved changes.</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md" onClick={() => analysis.setConfirmNew(false)}>Cancel</Button>
           <Button variant="primary" size="md" onClick={analysis.doNew}>Start New</Button>

@@ -8,6 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Landing from '@/pages/Landing';
 import Analysis from '@/pages/Analysis';
+import Onboarding from '@/pages/Onboarding';
 import SavedAnalyses from '@/pages/SavedAnalyses';
 import Sources from '@/pages/Sources';
 import { AnalysisProvider } from '@/lib/AnalysisContext';
@@ -45,6 +46,7 @@ const AuthenticatedApp = () => {
       <Routes>
         {/* Add your page Route elements here */}
         <Route path="/" element={<Landing />} />
+        <Route path="/analysis/new" element={<Onboarding />} />
         <Route path="/analysis/affordability" element={<Analysis />} />
         <Route path="/analysis/property-costs" element={<Analysis />} />
         <Route path="/analysis/investment" element={<Analysis />} />

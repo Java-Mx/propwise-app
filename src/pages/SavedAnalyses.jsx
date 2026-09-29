@@ -43,7 +43,7 @@ export default function SavedAnalyses() {
                 size="lg"
                 className="mt-5"
                 icon={Plus}
-                onClick={() => navigate("/analysis/affordability")}
+                onClick={() => navigate("/analysis/new")}
               >
                 Start New Analysis
               </Button>
@@ -57,9 +57,12 @@ export default function SavedAnalyses() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold text-ink">{a.title || "Untitled"}</div>
+                    <div className="mt-0.5 truncate text-xs text-sub">
+                      {a.owner_name ? `Prepared for ${a.owner_name}` : "—"}
+                      {a.property_location ? ` · ${a.property_location}` : ""}
+                    </div>
                     <div className="mt-0.5 text-xs text-sub">
                       {formatPrice(a.property_price)}
-                      {a.created_date ? ` · Created ${new Date(a.created_date).toLocaleDateString()}` : ""}
                       {a.updated_date ? ` · Updated ${new Date(a.updated_date).toLocaleDateString()}` : ""}
                     </div>
                   </div>
