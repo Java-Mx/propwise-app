@@ -215,14 +215,11 @@ export function AnalysisProvider({ children }) {
   // Onboarding "Continue" — create a fresh analysis context carrying the basic
   // metadata. One data model: this becomes the active analysis; Save later
   // persists it (assigning the single id). Onboarding does not pre-save.
-  const startAnalysis = useCallback((meta) => {
-    setInputs({
-      ...DEFAULT_INPUTS,
-      title: meta.reportName || "",
-      owner_name: meta.fullName || "",
-      owner_email: meta.email || "",
-      property_location: meta.location || "",
-    });
+  // Onboarding "Continue" — accepts the full wizard payload (basic + property +
+  // financial). Each step must be completed before the report opens, so the
+  // active analysis always starts with the core details filled in.
+  const startAnalysis = useCallback((data = {}) => {
+    setInputs({ ...DEFAULT_INPUTS, ...data });
     setCurrentId(null);
     setLoadError(null);
     navigate("/analysis/affordability");
