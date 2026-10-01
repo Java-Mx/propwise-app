@@ -20,6 +20,7 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import SharedReport from '@/pages/SharedReport';
+import Profile from '@/pages/Profile';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -50,21 +51,24 @@ const AuthenticatedApp = () => {
       <MobileToolsProvider>
       <Routes>
         {/* Add your page Route elements here */}
+        {/* Public routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        {/* Analysis tools are public — usable without login. Saving & sharing require an account. */}
-        <Route path="/analysis" element={<Navigate to="/analysis/new" replace />} />
-        <Route path="/analysis/new" element={<Onboarding />} />
-        <Route path="/analysis/affordability" element={<Analysis />} />
-        <Route path="/analysis/property-costs" element={<Analysis />} />
-        <Route path="/analysis/investment" element={<Analysis />} />
-        <Route path="/analysis/:id" element={<Analysis />} />
+        {/* Authenticated routes — analyses, tools and account are owner-scoped */}
         <Route element={<ProtectedRoute unauthenticatedElement={loginRedirect} />}>
+          <Route path="/analysis" element={<Navigate to="/analysis/new" replace />} />
+          <Route path="/analysis/new" element={<Onboarding />} />
+          <Route path="/analysis/affordability" element={<Analysis />} />
+          <Route path="/analysis/property-costs" element={<Analysis />} />
+          <Route path="/analysis/investment" element={<Analysis />} />
+          <Route path="/analysis/:id" element={<Analysis />} />
           <Route path="/tools/saved" element={<SavedAnalyses />} />
           <Route path="/tools/sources" element={<Sources />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/shared/:id" element={<SharedReport />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

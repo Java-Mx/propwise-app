@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { Plus, FolderOpen, Save, Download, Settings, ShieldCheck, Sun, Moon, Monitor, X } from "lucide-react";
+import { Plus, FolderOpen, Save, Download, Settings, ShieldCheck, Sun, Moon, Monitor, X, User, LogOut, LogIn } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/AuthContext";
 
 const Ctx = createContext(null);
 export const useMobileTools = () => useContext(Ctx);
@@ -26,13 +27,16 @@ const OPTIONS = [
   { label: "Save Analysis", icon: Save, action: "save" },
   { label: "Export Report", icon: Download, action: "export" },
   { label: "Trusted Sources", icon: ShieldCheck, action: "sources" },
+  { label: "Profile", icon: User, action: "profile" },
   { label: "Settings", icon: Settings, action: "settings" },
+  { label: "Log out", icon: LogOut, action: "logout" },
 ];
 
 function ToolsSheet({ open, onClose }) {
   const navigate = useNavigate();
   const analysis = useAnalysis();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState("");
 
@@ -46,6 +50,8 @@ function ToolsSheet({ open, onClose }) {
       case "export": analysis.exportReport(); close(); break;
       case "saved": navigate("/tools/saved"); close(); break;
       case "sources": navigate("/tools/sources"); close(); break;
+      case "profile": navigate("/profile"); close(); break;
+      case "logout": logout(true); break;
       case "settings": setName(analysis.inputs.title || ""); setRenaming(true); break;
       default: break;
     }
@@ -56,6 +62,17 @@ function ToolsSheet({ open, onClose }) {
       <div className="absolute inset-0 bg-black/30" onClick={close} />
       <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-7 shadow-[0_-10px_30px_rgba(24,35,58,0.12)]">
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line" />
+        {user && (
+          <div className="mb-3 flex items-center gap-3 rounded-xl border border-line bg-white px-3 py-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-jade text-xs font-semibold text-white">
+              {(user.full_name || user.email || "?").trim().slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-ink">{user.full_name || "PropWise user"}</div>
+              <div className="truncate text-xs text-sub">{user.email}</div>
+            </div>
+          </div>
+        )}
         <div className="mb-3 grid grid-cols-3 gap-2 px-1">
           {[
             { key: "light", label: "Light", icon: Sun },
@@ -110,7 +127,7 @@ function ToolsSheet({ open, onClose }) {
           </div>
         ) : (
           <div className="divide-y divide-line">
-            {OPTIONS.map((o) => {
+            {(user ? OPTIONS : OPTIONS.filter(o => !['profile', 'logout'].includes(o.action))).map((o) => {
               const Icon = o.icon;
               return (
                 <button
@@ -124,6 +141,16 @@ function ToolsSheet({ open, onClose }) {
                 </button>
               );
             })}
+            {!user && (
+              <>
+                <button onClick={() => { navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); close(); }} className="flex h-[52px] w-full items-center gap-3 px-1 text-left active:scale-[0.99]">
+                  <LogIn className="h-5 w-5 text-jade" /><span className="text-[15px] font-medium text-ink">Log in</span>
+                </button>
+                <button onClick={() => { navigate(`/signup?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); close(); }} className="flex h-[52px] w-full items-center gap-3 px-1 text-left active:scale-[0.99]">
+                  <User className="h-5 w-5 text-jade" /><span className="text-[15px] font-medium text-ink">Sign up</span>
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

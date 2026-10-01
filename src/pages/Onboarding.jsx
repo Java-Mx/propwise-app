@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { newKey } from '@/components/propwise/state/analysisModel';
 import { useAnalysis } from "@/lib/AnalysisContext";
+import { useAuth } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/propwise/Logo";
 import { NumberInput, PercentInput, Select, ChoiceInput } from "@/components/propwise/ui";
@@ -24,6 +25,7 @@ const INPUT_CLS =
 export default function Onboarding() {
   const navigate = useNavigate();
   const analysis = useAnalysis();
+  const { user: authUser } = useAuth();
   const location = useLocation();
   const initial = new URLSearchParams(location.search).has('step') || !analysis.active?.report_ready ? analysis.wizard : null;
   const [step, setStep] = useState(initial?.step || 1);
@@ -31,7 +33,7 @@ export default function Onboarding() {
   const [draftKey] = useState(initial?.draftKey || newKey());
   const [draftId, setDraftId] = useState(initial?.analysisId || null);
   const [form, setForm] = useState(initial?.form || {
-    reportName: '', fullName: '', email: '', location: '',
+    reportName: '', fullName: authUser?.full_name || '', email: authUser?.email || '', location: '',
     property_type: 'Apartment', property_price: '', monthly_income: '', existing_emi: '', amount_saved: '',
     home_loan_percentage: '', interest_rate: '', loan_tenure_years: '',
   });

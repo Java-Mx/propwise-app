@@ -6,6 +6,8 @@ import { useAnalysis } from "@/lib/AnalysisContext";
 import { Calculator, Wallet, TrendingUp, Wrench, ChevronDown, X, Sun, Moon, Monitor, Home } from "lucide-react";
 import Logo from "@/components/propwise/Logo";
 import { useMobileTools } from "@/components/propwise/MobileTools";
+import UserMenu from "@/components/propwise/UserMenu";
+import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/theme";
 import { MODULES, GROUPS, moduleList, TOOL_ACTIONS } from "@/lib/modules";
 
@@ -19,8 +21,10 @@ export default function PropWiseHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const analysis = useAnalysis();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { openTools } = useMobileTools();
+  const returnTo = encodeURIComponent(location.pathname + location.search);
   const [openMenu, setOpenMenu] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -166,6 +170,25 @@ export default function PropWiseHeader() {
             );
           })}
         </nav>
+
+        {user ? (
+          <UserMenu className="hidden md:flex" />
+        ) : (
+          <div className="hidden items-center gap-2 md:flex">
+            <button
+              onClick={() => navigate(`/login?returnTo=${returnTo}`)}
+              className="inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium text-steel transition hover:bg-[#E8F5F1] hover:text-jade"
+            >
+              Log in
+            </button>
+            <button
+              onClick={() => navigate(`/signup?returnTo=${returnTo}`)}
+              className="inline-flex h-9 items-center rounded-lg bg-jade px-3.5 text-sm font-medium text-white transition hover:bg-[#26786E]"
+            >
+              Sign up
+            </button>
+          </div>
+        )}
 
         <button
           onClick={openTools}
