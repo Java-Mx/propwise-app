@@ -2,7 +2,7 @@
 
 ## Verification status
 - Implementation review completed for persistence, draft recovery, record actions, routing and semantic text colors.
-- Frontend compilation was checked during implementation; final compilation must pass after the last edit.
+- Final frontend compilation passed after the last implementation edit. This is a build check, not end-to-end browser verification.
 - The read-only report handler's malformed-link check returned 404 (no report data).
 - **End-to-end browser tests and the responsive visual matrix below are PENDING.** No runtime save/routing/visual case is marked passed without Testing Agent evidence. Use the Testing Agent side panel; do not infer runtime success from compilation.
 
