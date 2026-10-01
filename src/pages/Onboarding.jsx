@@ -126,69 +126,68 @@ export default function Onboarding() {
           <Logo size={48} />
         </div>
 
-        <div className="mx-auto mt-8 w-full max-w-[560px] md:mt-12">
-          {/* Step indicator — single horizontal strip on desktop, compact bar on mobile */}
-          <div className="mb-6">
-            <div className="hidden items-center gap-2 overflow-x-auto rounded-xl border border-line bg-white px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] no-scrollbar sm:flex">
-              <span className="shrink-0 whitespace-nowrap rounded-md bg-jadebg px-2 py-1 text-jade">Step {step} of 4</span>
-              <span className="shrink-0 text-sub" aria-hidden>·</span>
-              {STEPS.map((s, i) => {
-                const n = i + 1;
-                const isCurrent = n === step;
-                const isDone = n < step;
-                const reachable = n <= reached;
-                return (
-                  <React.Fragment key={s.key}>
-                    <button
-                      type="button"
-                      onClick={() => goTo(n)}
-                      disabled={!reachable}
-                      className={cn(
-                        "inline-flex shrink-0 items-center gap-1 whitespace-nowrap transition",
-                        isCurrent ? "text-jade" : isDone ? "text-ink" : "text-sub",
-                        reachable && !isCurrent ? "cursor-pointer hover:text-jade" : "",
-                        !reachable && "cursor-not-allowed"
-                      )}
-                    >
-                      {isDone && <Check className="h-3 w-3" />}
-                      {s.label}
-                    </button>
-                    {i < STEPS.length - 1 && <span className="shrink-0 text-sub" aria-hidden>·</span>}
-                  </React.Fragment>
-                );
-              })}
-            </div>
-            <div className="sm:hidden">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
-                <span className="shrink-0 whitespace-nowrap rounded-md bg-jadebg px-2 py-1 text-jade">Step {step} of 4</span>
-                <span className="shrink-0 text-sub" aria-hidden>·</span>
-                <span className="truncate text-ink">{STEPS[step - 1].label}</span>
-              </div>
-              <div className="mt-2 flex gap-1.5">
-                {STEPS.map((s, i) => {
-                  const n = i + 1;
-                  const isCurrent = n === step;
-                  const isDone = n < step;
-                  const reachable = n <= reached;
-                  return (
-                    <button
-                      key={s.key}
-                      type="button"
-                      onClick={() => goTo(n)}
-                      disabled={!reachable}
-                      aria-label={`Step ${n}: ${s.label}`}
-                      className={cn(
-                        "h-1.5 flex-1 rounded-full transition",
-                        isCurrent ? "bg-jade" : isDone ? "bg-jade/40" : "bg-line",
-                        reachable ? "cursor-pointer" : "cursor-not-allowed"
-                      )}
-                    />
-                  );
-                })}
-              </div>
-            </div>
+        {/* Step indicator — single horizontal strip (desktop), compact bar (mobile) */}
+        <div className="mx-auto mt-8 mb-6 w-full max-w-3xl overflow-x-auto no-scrollbar md:mt-12">
+          <div className="mx-auto hidden w-max items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] sm:flex">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-jadebg px-3 py-1 text-jade">Step {step} of 4</span>
+            {STEPS.map((s, i) => {
+              const n = i + 1;
+              const isCurrent = n === step;
+              const isDone = n < step;
+              const reachable = n <= reached;
+              return (
+                <React.Fragment key={s.key}>
+                  <span className="shrink-0 text-sub" aria-hidden>·</span>
+                  <button
+                    type="button"
+                    onClick={() => goTo(n)}
+                    disabled={!reachable}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1 whitespace-nowrap transition",
+                      isCurrent ? "text-jade" : isDone ? "text-ink" : "text-sub",
+                      reachable && !isCurrent ? "cursor-pointer hover:text-jade" : "",
+                      !reachable && "cursor-not-allowed"
+                    )}
+                  >
+                    {isDone && <Check className="h-3 w-3" />}
+                    {s.label}
+                  </button>
+                </React.Fragment>
+              );
+            })}
           </div>
+        </div>
+        <div className="mx-auto mt-8 mb-6 w-full max-w-[560px] sm:hidden md:mt-12">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-jadebg px-3 py-1 text-jade">Step {step} of 4</span>
+            <span className="shrink-0 text-sub" aria-hidden>·</span>
+            <span className="truncate text-ink">{STEPS[step - 1].label}</span>
+          </div>
+          <div className="mt-2 flex gap-1.5">
+            {STEPS.map((s, i) => {
+              const n = i + 1;
+              const isCurrent = n === step;
+              const isDone = n < step;
+              const reachable = n <= reached;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => goTo(n)}
+                  disabled={!reachable}
+                  aria-label={`Step ${n}: ${s.label}`}
+                  className={cn(
+                    "h-1.5 flex-1 rounded-full transition",
+                    isCurrent ? "bg-jade" : isDone ? "bg-jade/40" : "bg-line",
+                    reachable ? "cursor-pointer" : "cursor-not-allowed"
+                  )}
+                />
+              );
+            })}
+          </div>
+        </div>
 
+        <div className="mx-auto mt-8 w-full max-w-[560px] md:mt-12">
           <h1 className="text-center text-2xl font-bold tracking-tight text-ink md:text-[28px]">
             {step === 4 ? "Review your analysis" : "Let's set up your property analysis"}
           </h1>
