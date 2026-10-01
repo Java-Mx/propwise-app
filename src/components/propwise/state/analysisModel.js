@@ -1,6 +1,7 @@
 import { DEFAULT_INPUTS, computeAll, num } from '@/lib/finance';
 
 export const newKey = () => crypto.randomUUID();
+export const isLocalId = (id) => typeof id === 'string' && id.startsWith('local_');
 export function readInputs(record = {}) {
   return Object.fromEntries(Object.keys(DEFAULT_INPUTS).map(key => [key, record[key] ?? DEFAULT_INPUTS[key]]));
 }

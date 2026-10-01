@@ -55,13 +55,14 @@ const AuthenticatedApp = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Analysis tools are public — usable without login. Saving & sharing require an account. */}
+        <Route path="/analysis" element={<Navigate to="/analysis/new" replace />} />
+        <Route path="/analysis/new" element={<Onboarding />} />
+        <Route path="/analysis/affordability" element={<Analysis />} />
+        <Route path="/analysis/property-costs" element={<Analysis />} />
+        <Route path="/analysis/investment" element={<Analysis />} />
+        <Route path="/analysis/:id" element={<Analysis />} />
         <Route element={<ProtectedRoute unauthenticatedElement={loginRedirect} />}>
-          <Route path="/analysis" element={<Navigate to="/analysis/new" replace />} />
-          <Route path="/analysis/new" element={<Onboarding />} />
-          <Route path="/analysis/affordability" element={<Analysis />} />
-          <Route path="/analysis/property-costs" element={<Analysis />} />
-          <Route path="/analysis/investment" element={<Analysis />} />
-          <Route path="/analysis/:id" element={<Analysis />} />
           <Route path="/tools/saved" element={<SavedAnalyses />} />
           <Route path="/tools/sources" element={<Sources />} />
           <Route path="/shared/:id" element={<SharedReport />} />

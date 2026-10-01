@@ -8,6 +8,15 @@ export default function useAnalysisWorkspace(userId) {
     try {
       const stored = JSON.parse(localStorage.getItem(storageKey));
       if (stored && typeof stored.records === 'object' && stored.records !== null) return stored;
+      // Carry a guest's in-progress work into their account on first login.
+      if (userId) {
+        const guest = JSON.parse(localStorage.getItem('propwise:workspace:guest'));
+        if (guest && typeof guest.records === 'object' && guest.records !== null && Object.keys(guest.records).length > 0) {
+          localStorage.removeItem('propwise:workspace:guest');
+          localStorage.setItem(storageKey, JSON.stringify(guest));
+          return guest;
+        }
+      }
       const legacy = userId ? JSON.parse(localStorage.getItem('propwise:active')) : null;
       return { activeId: legacy?.currentId || null, records: {}, wizard: null };
     } catch { return { activeId: null, records: {}, wizard: null }; }
