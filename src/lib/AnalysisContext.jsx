@@ -5,7 +5,7 @@ import { formatINR, formatCompact } from "@/lib/finance";
 import { useAuth } from '@/lib/AuthContext';
 import useAnalysisWorkspace from '@/components/propwise/state/useAnalysisWorkspace';
 import useAnalysisRecords from '@/components/propwise/state/useAnalysisRecords';
-import { reportResults } from '@/components/propwise/state/analysisModel';
+import { reportResults, isLocalId } from '@/components/propwise/state/analysisModel';
 
 const AnalysisContext = createContext(null);
 
@@ -27,7 +27,11 @@ export function AnalysisProvider({ children }) {
     toastTimer.current = setTimeout(() => setToast(null), 5000);
   }, []);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
-  const records = useAnalysisRecords(store, user?.id, showToast);
+  const onAuthRequired = useCallback((returnTo) => {
+    const dest = returnTo || (window.location.pathname + window.location.search);
+    base44.auth.redirectToLogin(dest);
+  }, []);
+  const records = useAnalysisRecords(store, user?.id, showToast, onAuthRequired);
   const { savedAnalyses, loadSaved, loadById, loadError, setLoadError, del, duplicate, copyLink, rename } = records;
   const r = useMemo(() => reportResults(inputs, active?.calculated), [inputs, active?.calculated]);
   const analysisPath = useCallback((route, module) => {
@@ -55,11 +59,17 @@ export function AnalysisProvider({ children }) {
     } finally { openLock.current = false; setOpeningId(null); }
   }, [loadById, navigate, showToast, records.isSaving, records.busyId]);
   const startAnalysis = useCallback(async data => {
+    if (!user) {
+      const existing = currentId && isLocalId(currentId) ? currentId : null;
+      const record = records.commitLocal(data, { existingId: existing, reportReady: true });
+      navigate(`/analysis/${record.id}`);
+      return record;
+    }
     setInputs(data);
     const record = await records.write(data, false);
     if (record) navigate(`/analysis/${record.id}`);
     return record;
-  }, [setInputs, records.write, navigate]);
+  }, [user, currentId, setInputs, records.write, records.commitLocal, navigate]);
   const doNew = useCallback(() => {
     if (records.isSaving || records.busyId) return;
     setConfirmNew(false);

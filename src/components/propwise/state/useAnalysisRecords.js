@@ -142,18 +142,21 @@ export default function useAnalysisRecords(store, userId, showToast, onAuthRequi
     const copy = await base44.entities.Analysis.create({ ...savePayload(record), title: `${record.title} — Copy`, draft_key: newKey(), report_ready: true, status: 'saved', lifecycle: 'created', saved_at: new Date().toISOString(), share_token: '' });
     if (!copy?.id || copy.id === id) throw new Error('Independent copy was not confirmed.');
   }, 'Independent analysis copy saved.'), [action]);
-  const copyLink = useCallback(id => action(id, async () => {
-    const record = await base44.entities.Analysis.get(id);
-    if (record.status === 'draft') throw new Error('Save this report before sharing it.');
-    const token = record.share_token || (newKey().replaceAll('-', '') + newKey().replaceAll('-', ''));
-    if (!record.share_token) {
-      const confirmed = await base44.entities.Analysis.update(id, { share_token: token });
-      if (confirmed.share_token !== token) throw new Error('Shared link was not confirmed.');
-      change(w => { const cached = w.records[id]; return cached ? { ...w, records: { ...w.records, [id]: { ...cached, updated_date: confirmed.updated_date } } } : w; });
-    }
-    const url = `${window.location.origin}/shared/${id}?token=${token}`;
-    try { await navigator.clipboard.writeText(url); }
-    catch { window.prompt('Copy the read-only report link:', url); return; }
-  }, 'Read-only report link ready.'), [action, change]);
-  return { savedAnalyses, listLoading, listError, loadSaved, loadById, loadError, setLoadError, initialize, write, isSaving, saveError, busyId, del, rename, duplicate, copyLink };
+  const copyLink = useCallback(id => {
+    if (!userId) { onAuthRequired?.(window.location.pathname + window.location.search); return Promise.resolve(false); }
+    return action(id, async () => {
+      const record = await base44.entities.Analysis.get(id);
+      if (record.status === 'draft') throw new Error('Save this report before sharing it.');
+      const token = record.share_token || (newKey().replaceAll('-', '') + newKey().replaceAll('-', ''));
+      if (!record.share_token) {
+        const confirmed = await base44.entities.Analysis.update(id, { share_token: token });
+        if (confirmed.share_token !== token) throw new Error('Shared link was not confirmed.');
+        change(w => { const cached = w.records[id]; return cached ? { ...w, records: { ...w.records, [id]: { ...cached, updated_date: confirmed.updated_date } } } : w; });
+      }
+      const url = `${window.location.origin}/shared/${id}?token=${token}`;
+      try { await navigator.clipboard.writeText(url); }
+      catch { window.prompt('Copy the read-only report link:', url); return; }
+    }, 'Read-only report link ready.');
+  }, [action, change, userId, onAuthRequired]);
+  return { savedAnalyses, listLoading, listError, loadSaved, loadById, loadError, setLoadError, initialize, write, isSaving, saveError, busyId, del, rename, duplicate, copyLink, commitLocal };
 }
