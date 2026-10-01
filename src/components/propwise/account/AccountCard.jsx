@@ -27,16 +27,17 @@ export default function AccountCard({ user, onNameUpdated }) {
     setSaving(true); setError(""); setSuccess(false);
     try {
       const res = await base44.functions.invoke("manageAccount", { action: "updateName", display_name: trimmed });
-      if (res?.data?.ok) {
+      // The browser SDK unwraps axios responses, so `res` is the JSON body directly.
+      if (res?.ok) {
         setEditing(false);
         setSuccess(true);
         await onNameUpdated?.();
         setTimeout(() => setSuccess(false), 4000);
       } else {
-        setError(res?.data?.error || "Unable to update your profile. Please retry.");
+        setError(res?.error || "Unable to update your profile. Please retry.");
       }
     } catch (e) {
-      setError(e?.response?.data?.error || e?.message || "Unable to update your profile. Please retry.");
+      setError(e?.data?.error || e?.message || "Unable to update your profile. Please retry.");
     } finally { setSaving(false); }
   };
 

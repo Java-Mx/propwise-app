@@ -15,16 +15,17 @@ export default function DangerZone() {
     setError(""); setDeleting(true);
     try {
       const res = await base44.functions.invoke("manageAccount", { action: "deleteAccount", confirm });
-      if (res?.data?.ok) {
+      // The browser SDK unwraps axios responses, so `res` is the JSON body directly.
+      if (res?.ok) {
         // Account + user data deleted server-side. End the session and return
         // to the public landing page.
         await base44.auth.logout("/");
       } else {
-        setError(res?.data?.error || "Unable to delete your account. Please retry.");
+        setError(res?.error || "Unable to delete your account. Please retry.");
         setDeleting(false);
       }
     } catch (e) {
-      setError(e?.response?.data?.error || e?.message || "Unable to delete your account. Please retry.");
+      setError(e?.data?.error || e?.message || "Unable to delete your account. Please retry.");
       setDeleting(false);
     }
   };
