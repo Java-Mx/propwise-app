@@ -22,13 +22,15 @@ export default async function(req) {
     const action = body && body.action;
 
     if (action === 'updateName') {
-      const name = String(body.full_name || '').trim();
+      const name = String(body.display_name || body.full_name || '').trim();
       if (!name) return fail('Please enter your full name.');
       if (name.length > NAME_MAX) return fail('That name is too long.');
-      // full_name is a built-in field that updateMe() cannot change, so elevate
-      // with the service role to persist it on the user's own record.
-      await base44.asServiceRole.entities.User.update(user.id, { full_name: name });
-      return Response.json({ ok: true, full_name: name });
+      // `full_name` is an immutable built-in, so the editable name is persisted
+      // in the custom `display_name` field via the request-authenticated client.
+      // updateMe only touches the caller's own record — user A cannot modify
+      // user B, and the id is never taken from the payload.
+      await base44.auth.updateMe({ display_name: name });
+      return Response.json({ ok: true, display_name: name });
     }
 
     if (action === 'changePassword') {

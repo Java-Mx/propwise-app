@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
+import { useAuth, displayName } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 import { User as UserIcon, Settings, LogOut, ChevronDown } from "lucide-react";
 
@@ -34,9 +34,9 @@ export default function UserMenu({ className }) {
         className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-white pl-1.5 pr-2.5 text-sm font-medium text-ink transition hover:bg-appbg"
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-jade text-[11px] font-semibold text-white">
-          {initials(user.full_name, user.email)}
+          {initials(displayName(user), user.email)}
         </span>
-        <span className="hidden max-w-[120px] truncate lg:inline">{user.full_name || "Account"}</span>
+        <span className="hidden max-w-[120px] truncate lg:inline">{displayName(user) || "Account"}</span>
         <ChevronDown className={cn("h-4 w-4 text-sub transition-transform", open && "rotate-180")} />
       </button>
 
@@ -45,7 +45,7 @@ export default function UserMenu({ className }) {
         open ? "block" : "hidden"
       )}>
         <div className="px-2 py-1.5">
-          <div className="truncate text-sm font-semibold text-ink">{user.full_name || "PropWise user"}</div>
+          <div className="truncate text-sm font-semibold text-ink">{displayName(user) || "PropWise user"}</div>
           <div className="truncate text-xs text-sub">{user.email}</div>
         </div>
         <div className="my-1 h-px bg-line" />

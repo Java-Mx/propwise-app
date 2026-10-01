@@ -7,6 +7,11 @@
         "admin",
         "user"
       ]
+    },
+    "display_name": {
+      "type": "string",
+      "default": "",
+      "description": "User-editable display name. Falls back to the immutable registration full_name when empty."
     }
   },
   "required": [

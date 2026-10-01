@@ -4,6 +4,18 @@ import { appParams } from '@/lib/app-params';
 
 const AuthContext = createContext();
 
+// Derives the user's display name from the editable `display_name` field,
+// falling back to the immutable registration `full_name`. The authenticated
+// User record from useAuth() is the single source of truth — do not duplicate
+// profile state elsewhere.
+export const displayName = (user) => {
+  const dn = (user?.display_name || '').trim();
+  if (dn) return dn;
+  const fn = (user?.full_name || '').trim();
+  if (fn) return fn;
+  return '';
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);

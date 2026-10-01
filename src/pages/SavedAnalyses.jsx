@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAnalysis } from "@/lib/AnalysisContext";
+import { useAuth, displayName } from "@/lib/AuthContext";
 import PropWiseHeader from "@/components/propwise/PropWiseHeader";
 import { Button, ConfirmDialog } from "@/components/propwise/ui";
 import {
@@ -10,6 +11,8 @@ import {
 export default function SavedAnalyses() {
   const navigate = useNavigate();
   const { savedAnalyses, loadSaved, load, del, duplicate, copyLink, rename, requestNew, listLoading, listError, saveError, busyId, isSaving, openingId } = useAnalysis();
+  const { user } = useAuth();
+  const name = displayName(user);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [renameTarget, setRenameTarget] = useState(null);
   const [renameVal, setRenameVal] = useState("");
@@ -26,8 +29,13 @@ export default function SavedAnalyses() {
       <PropWiseHeader />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Saved Analyses</h1>
-        <p className="mt-1 text-sm text-sub">Open, duplicate, rename or delete your saved property analyses.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
+          {name ? `Welcome back, ${name}` : "Welcome back"}
+        </h1>
+        <p className="mt-1 text-sm text-sub">Continue your property analysis and make informed financial decisions.</p>
+
+        <h2 className="mt-8 text-base font-semibold text-ink">Saved analyses</h2>
+        <p className="mt-0.5 text-sm text-sub">Open, duplicate, rename or delete your saved property analyses.</p>
 
         {saveError && <p className="mt-3 text-sm text-err" role="alert">{saveError}</p>}
         <div className="mt-6">

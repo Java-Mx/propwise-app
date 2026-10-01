@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { newKey } from '@/components/propwise/state/analysisModel';
 import { useAnalysis } from "@/lib/AnalysisContext";
-import { useAuth } from "@/lib/AuthContext";
+import { useAuth, displayName } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/propwise/Logo";
 import { NumberInput, PercentInput, Select, ChoiceInput } from "@/components/propwise/ui";
@@ -33,7 +33,7 @@ export default function Onboarding() {
   const [draftKey] = useState(initial?.draftKey || newKey());
   const [draftId, setDraftId] = useState(initial?.analysisId || null);
   const [form, setForm] = useState(initial?.form || {
-    reportName: '', fullName: authUser?.full_name || '', email: authUser?.email || '', location: '',
+    reportName: '', fullName: displayName(authUser) || '', email: authUser?.email || '', location: '',
     property_type: 'Apartment', property_price: '', monthly_income: '', existing_emi: '', amount_saved: '',
     home_loan_percentage: '', interest_rate: '', loan_tenure_years: '',
   });
@@ -127,36 +127,65 @@ export default function Onboarding() {
         </div>
 
         <div className="mx-auto mt-8 w-full max-w-[560px] md:mt-12">
-          {/* Step indicator — functional, current step highlighted, completed steps revisitable */}
-          <div className="mb-6 flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
-            <div className="flex items-center gap-2">
-              <span className="text-jade">Step {step} of 4</span>
-              <span className="text-sub">·</span>
-              <span className="text-sub sm:hidden">{STEPS[step - 1].label}</span>
-              <span className="hidden sm:inline">
+          {/* Step indicator — single horizontal strip on desktop, compact bar on mobile */}
+          <div className="mb-6">
+            <div className="hidden items-center gap-2 overflow-x-auto rounded-xl border border-line bg-white px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] no-scrollbar sm:flex">
+              <span className="shrink-0 whitespace-nowrap rounded-md bg-jadebg px-2 py-1 text-jade">Step {step} of 4</span>
+              <span className="shrink-0 text-sub" aria-hidden>·</span>
+              {STEPS.map((s, i) => {
+                const n = i + 1;
+                const isCurrent = n === step;
+                const isDone = n < step;
+                const reachable = n <= reached;
+                return (
+                  <React.Fragment key={s.key}>
+                    <button
+                      type="button"
+                      onClick={() => goTo(n)}
+                      disabled={!reachable}
+                      className={cn(
+                        "inline-flex shrink-0 items-center gap-1 whitespace-nowrap transition",
+                        isCurrent ? "text-jade" : isDone ? "text-ink" : "text-sub",
+                        reachable && !isCurrent ? "cursor-pointer hover:text-jade" : "",
+                        !reachable && "cursor-not-allowed"
+                      )}
+                    >
+                      {isDone && <Check className="h-3 w-3" />}
+                      {s.label}
+                    </button>
+                    {i < STEPS.length - 1 && <span className="shrink-0 text-sub" aria-hidden>·</span>}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+            <div className="sm:hidden">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                <span className="shrink-0 whitespace-nowrap rounded-md bg-jadebg px-2 py-1 text-jade">Step {step} of 4</span>
+                <span className="shrink-0 text-sub" aria-hidden>·</span>
+                <span className="truncate text-ink">{STEPS[step - 1].label}</span>
+              </div>
+              <div className="mt-2 flex gap-1.5">
                 {STEPS.map((s, i) => {
                   const n = i + 1;
                   const isCurrent = n === step;
+                  const isDone = n < step;
                   const reachable = n <= reached;
                   return (
-                    <React.Fragment key={s.key}>
-                      <button
-                        type="button"
-                        onClick={() => goTo(n)}
-                        disabled={!reachable}
-                        className={cn(
-                          "transition",
-                          isCurrent ? "text-jade" : "text-sub",
-                          reachable ? "cursor-pointer hover:text-ink" : "cursor-not-allowed"
-                        )}
-                      >
-                        {s.label}
-                      </button>
-                      {i < STEPS.length - 1 && <span className="text-sub"> · </span>}
-                    </React.Fragment>
+                    <button
+                      key={s.key}
+                      type="button"
+                      onClick={() => goTo(n)}
+                      disabled={!reachable}
+                      aria-label={`Step ${n}: ${s.label}`}
+                      className={cn(
+                        "h-1.5 flex-1 rounded-full transition",
+                        isCurrent ? "bg-jade" : isDone ? "bg-jade/40" : "bg-line",
+                        reachable ? "cursor-pointer" : "cursor-not-allowed"
+                      )}
+                    />
                   );
                 })}
-              </span>
+              </div>
             </div>
           </div>
 
