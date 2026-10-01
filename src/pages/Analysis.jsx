@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, Navigate } from "react-router-dom";
+import AnalysisRouteState from '@/components/propwise/AnalysisRouteState';
+import ReportStatus from '@/components/propwise/ReportStatus';
 import { useAnalysis } from "@/lib/AnalysisContext";
 import PropWiseHeader from "@/components/propwise/PropWiseHeader";
 import ModuleHost from "@/components/propwise/ModuleHost";
@@ -17,40 +19,27 @@ export default function Analysis() {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { inputs, set, loadById, loadError } = useAnalysis();
-  const group = ROUTE_GROUP[location.pathname] || "affordability";
+  const { inputs, set, currentId, active, loadById, loadError, analysisPath } = useAnalysis();
+  const requestedGroup = new URLSearchParams(location.search).get('group');
+  const group = ['affordability', 'costs', 'investment'].includes(requestedGroup) ? requestedGroup : 'affordability';
   const [titleEditing, setTitleEditing] = useState(false);
-
-  // Direct URL / refresh / shared link → load the saved analysis by id.
+  const [loadedId, setLoadedId] = useState(null);
+  const [retry, setRetry] = useState(0);
+  const targetId = id || currentId;
   useEffect(() => {
-    if (id) loadById(id);
-  }, [id, loadById]);
-
-  if (id && loadError === id) {
-    return (
-      <div className="min-h-screen text-ink">
-        <PropWiseHeader />
-        <main className="mx-auto max-w-3xl px-4 py-16">
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-line bg-white px-6 py-16 text-center shadow-sm">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#E8F5F1] text-jade">
-              <FileQuestion className="h-6 w-6" />
-            </div>
-            <h2 className="text-lg font-semibold text-ink">Analysis not found</h2>
-            <p className="mt-1 max-w-sm text-sm text-sub">
-              This analysis may have been deleted, or the link is no longer valid.
-            </p>
-            <button
-              onClick={() => navigate("/analysis/new")}
-              className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-jade px-4 text-sm font-semibold text-white hover:bg-[#26786E]"
-            >
-              <Plus className="h-4 w-4" /> Create a new analysis
-            </button>
-          </div>
-        </main>
-        <BottomNav />
-      </div>
-    );
+    if (!targetId) return;
+    let cancelled = false;
+    setLoadedId(null);
+    loadById(targetId).then(record => { if (!cancelled && record) setLoadedId(targetId); });
+    return () => { cancelled = true; };
+  }, [targetId, loadById, retry]);
+  if (!id) {
+    if (targetId && (loadedId !== targetId || !active)) return <AnalysisRouteState loading={loadError?.id !== targetId} error={loadError?.id === targetId ? loadError : null} onRetry={() => setRetry(v => v + 1)} />;
+    const route = analysisPath(location.pathname, new URLSearchParams(location.search).get('m'));
+    return <Navigate to={route} replace />;
   }
+  if (loadError?.id === id || loadedId !== id || currentId !== id) return <AnalysisRouteState loading={loadError?.id !== id} error={loadError?.id === id ? loadError : null} onRetry={() => setRetry(v => v + 1)} />;
+  if (!active?.report_ready) return <Navigate to="/analysis/new" replace />;
 
   return (
     <div className="min-h-screen text-ink">
@@ -90,7 +79,8 @@ export default function Analysis() {
           </div>
         </div>
 
-        <ModuleHost group={group} />
+        <ReportStatus />
+        <ModuleHost key={id} group={group} />
       </main>
 
       <footer className="mx-auto max-w-7xl px-4 pb-28 md:pb-10">

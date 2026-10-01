@@ -12,7 +12,7 @@ import { useChartTheme, tooltipStyle } from "@/lib/chartTheme";
 export default function ScenarioCompare({ inputs, set }) {
   const t = useChartTheme();
   const scenarios = inputs.scenarios || [];
-  const appreciation = num(inputs.annual_appreciation) || 5;
+  const appreciation = num(inputs.annual_appreciation);
 
   const addScenario = () => {
     if (scenarios.length >= 3) return;

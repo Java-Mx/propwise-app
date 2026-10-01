@@ -1,242 +1,72 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { DEFAULT_INPUTS, computeAll, num, formatINR, formatCompact } from "@/lib/finance";
+import { formatINR, formatCompact } from "@/lib/finance";
+import { useAuth } from '@/lib/AuthContext';
+import useAnalysisWorkspace from '@/components/propwise/state/useAnalysisWorkspace';
+import useAnalysisRecords from '@/components/propwise/state/useAnalysisRecords';
+import { reportResults } from '@/components/propwise/state/analysisModel';
 
 const AnalysisContext = createContext(null);
 
-// Entity number fields — must be stored as numbers, never empty strings
-// (empty strings fail the Analysis schema validation and cause "cannot save").
-const NUM_FIELDS = [
-  "property_price", "amount_saved", "home_loan_percentage", "monthly_income",
-  "existing_emi", "interest_rate", "loan_tenure_years", "monthly_rent",
-  "annual_rent_increase", "vacancy_rate", "annual_rental_maintenance",
-  "other_rental_costs", "annual_appreciation", "projection_years",
-];
-
-// Coerce inputs into a persistence-safe payload matching the Analysis schema.
-function sanitize(inputs) {
-  const out = { ...inputs };
-  NUM_FIELDS.forEach((f) => { out[f] = num(out[f]); });
-  out.costs = Array.isArray(out.costs)
-    ? out.costs.map((c) => ({ ...c, amount: num(c.amount) }))
-    : [];
-  out.scenarios = Array.isArray(out.scenarios)
-    ? out.scenarios.map((s) => ({
-        ...s,
-        property_price: num(s.property_price),
-        amount_saved: num(s.amount_saved),
-        home_loan_percentage: num(s.home_loan_percentage),
-        interest_rate: num(s.interest_rate),
-        loan_tenure_years: num(s.loan_tenure_years),
-        monthly_rent: num(s.monthly_rent),
-      }))
-    : [];
-  out.title = (out.title || "").trim() || "Property Analysis";
-  out.property_type = out.property_type || "Apartment";
-  return out;
-}
-
 export function AnalysisProvider({ children }) {
   const navigate = useNavigate();
-  const [inputs, setInputs] = useState(() => {
-    try {
-      const raw = localStorage.getItem("propwise:active");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.inputs) return { ...DEFAULT_INPUTS, ...parsed.inputs };
-      }
-    } catch (e) { /* ignore */ }
-    return { ...DEFAULT_INPUTS };
-  });
-  const [currentId, setCurrentId] = useState(() => {
-    try {
-      const raw = localStorage.getItem("propwise:active");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.currentId) return parsed.currentId;
-      }
-    } catch (e) { /* ignore */ }
-    return null;
-  });
-  const [savedAnalyses, setSavedAnalyses] = useState([]);
+  const { user } = useAuth();
+  const store = useAnalysisWorkspace(user?.id);
+  const { inputs, setInputs, set, currentId, active, workspace, saveWizard } = store;
   const [toast, setToast] = useState(null);
   const [confirmNew, setConfirmNew] = useState(false);
   const [namePrompt, setNamePrompt] = useState(false);
-  const [nameVal, setNameVal] = useState("");
-  const [loadError, setLoadError] = useState(null);
+  const [nameVal, setNameVal] = useState('');
+  const [openingId, setOpeningId] = useState(null);
+  const openLock = React.useRef(false);
   const toastTimer = React.useRef(null);
-
-  const r = useMemo(() => computeAll(inputs), [inputs]);
-
-  const set = useCallback((field, value) => setInputs((p) => ({ ...p, [field]: value })), []);
-
-  const showToast = useCallback((msg, tone = "ok") => {
-    if (toastTimer.current) clearTimeout(toastTimer.current);
+  const showToast = useCallback((msg, tone = 'ok') => {
+    clearTimeout(toastTimer.current);
     setToast({ msg, tone });
-    toastTimer.current = setTimeout(() => setToast(null), 2800);
+    toastTimer.current = setTimeout(() => setToast(null), 5000);
   }, []);
-
-  const loadSaved = useCallback(async () => {
-    try {
-      const list = await base44.entities.Analysis.list("-updated_date", 50);
-      setSavedAnalyses(list || []);
-    } catch (e) {
-      console.error("[PropWise] loadSaved failed", e);
-      setSavedAnalyses([]);
-    }
-  }, []);
-
-  useEffect(() => { loadSaved(); }, [loadSaved]);
-
-  // Persist the active analysis (inputs + id) so a refresh keeps onboarding metadata.
-  useEffect(() => {
-    try {
-      const hasMeta = (inputs.title || "").trim() || (inputs.owner_name || "").trim() || currentId || r.hasInputs;
-      if (hasMeta) localStorage.setItem("propwise:active", JSON.stringify({ inputs, currentId }));
-    } catch (e) { /* ignore */ }
-  }, [inputs, currentId, r.hasInputs]);
-
-  // Load a record into state WITHOUT navigating (used by the /analysis/:id route).
-  const loadById = useCallback(async (id) => {
-    try {
-      const rec = await base44.entities.Analysis.get(id);
-      const { id: _i, created_date, updated_date, created_by_id, ...data } = rec;
-      setInputs({ ...DEFAULT_INPUTS, ...data });
-      setCurrentId(id);
-      setLoadError(null);
-      return rec;
-    } catch (e) {
-      console.error("[PropWise] loadById failed", e);
-      setLoadError(id);
-      return null;
-    }
-  }, []);
-
-  const doSave = useCallback(async (overrideTitle) => {
-    const title = (overrideTitle ?? inputs.title ?? "").trim() || "Property Analysis";
-    const payload = sanitize({ ...inputs, title });
-    try {
-      if (currentId) {
-        await base44.entities.Analysis.update(currentId, payload);
-      } else {
-        const created = await base44.entities.Analysis.create(payload);
-        setCurrentId(created.id);
-      }
-      setInputs((p) => ({ ...p, title }));
-      await loadSaved();
-      showToast("Analysis saved successfully.");
-    } catch (e) {
-      console.error("[PropWise] save failed", e);
-      showToast("Unable to save this analysis. Please try again.", "err");
-    }
-  }, [inputs, currentId, loadSaved, showToast]);
-
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
+  const records = useAnalysisRecords(store, user?.id, showToast);
+  const { savedAnalyses, loadSaved, loadById, loadError, setLoadError, del, duplicate, copyLink, rename } = records;
+  const r = useMemo(() => reportResults(inputs, active?.calculated), [inputs, active?.calculated]);
+  const analysisPath = useCallback((route, module) => {
+    if (!currentId || !active?.report_ready) return '/analysis/new';
+    const group = route.includes('property-costs') ? 'costs' : route.includes('investment') ? 'investment' : 'affordability';
+    return `/analysis/${currentId}?group=${group}${module ? `&m=${module}` : ''}`;
+  }, [currentId, active?.report_ready]);
+  const doSave = useCallback(async overrideTitle => {
+    const record = await records.write({ ...inputs, title: overrideTitle ?? inputs.title });
+    if (record) navigate(`/analysis/${record.id}${window.location.search}`, { replace: true });
+    return record;
+  }, [records.write, inputs, navigate]);
   const requestSave = useCallback(() => {
-    if (!(inputs.title || "").trim()) {
-      setNameVal("");
-      setNamePrompt(true);
-      return;
-    }
-    doSave();
-  }, [inputs.title, doSave]);
-
-  const confirmNameSave = useCallback(() => {
-    setNamePrompt(false);
-    const t = nameVal.trim();
-    if (t) doSave(t);
-  }, [nameVal, doSave]);
-
-  // Open from Saved Analyses — loads then navigates to the stable report URL.
-  const load = useCallback(async (id) => {
-    const ok = await loadById(id);
-    if (ok) {
-      showToast("Analysis loaded");
-      navigate(`/analysis/${id}`);
-    } else {
-      showToast("Could not load analysis", "err");
-    }
-  }, [loadById, navigate, showToast]);
-
-  const del = useCallback(async (id) => {
+    if (!currentId) { navigate('/analysis/new'); return; }
+    if (!inputs.title?.trim()) { setNameVal(''); setNamePrompt(true); return; }
+    return doSave();
+  }, [currentId, inputs.title, doSave, navigate]);
+  const confirmNameSave = useCallback(async () => { if (await doSave(nameVal.trim())) setNamePrompt(false); }, [doSave, nameVal]);
+  const load = useCallback(async id => {
+    if (openLock.current || records.isSaving || records.busyId) return;
+    openLock.current = true; setOpeningId(id);
     try {
-      await base44.entities.Analysis.delete(id);
-      if (id === currentId) {
-        setCurrentId(null);
-        setInputs({ ...DEFAULT_INPUTS });
-      }
-      await loadSaved();
-      showToast("Analysis deleted");
-    } catch (e) {
-      console.error("[PropWise] delete failed", e);
-      showToast("Could not delete analysis", "err");
-    }
-  }, [currentId, loadSaved, showToast]);
-
-  // Create an independent copy with a new id.
-  const duplicate = useCallback(async (id) => {
-    try {
-      const rec = await base44.entities.Analysis.get(id);
-      const { id: _i, created_date, updated_date, created_by_id, ...data } = rec;
-      const payload = sanitize({ ...data, title: `${(rec.title || "Property Analysis").trim()} — Copy` });
-      await base44.entities.Analysis.create(payload);
-      await loadSaved();
-      showToast("Analysis duplicated");
-    } catch (e) {
-      console.error("[PropWise] duplicate failed", e);
-      showToast("Could not duplicate analysis", "err");
-    }
-  }, [loadSaved, showToast]);
-
-  // Copy a stable shareable URL pointing to the saved analysis id.
-  const copyLink = useCallback(async (id) => {
-    const url = `${window.location.origin}/analysis/${id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast("Link copied to clipboard");
-    } catch {
-      showToast("Copy this link: " + url, "warn");
-    }
-  }, [showToast]);
-
-  const rename = useCallback(async (id, newTitle) => {
-    const t = (newTitle || "").trim() || "Property Analysis";
-    try {
-      await base44.entities.Analysis.update(id, { title: t });
-      if (id === currentId) setInputs((p) => ({ ...p, title: t }));
-      await loadSaved();
-      showToast("Analysis renamed");
-    } catch (e) {
-      console.error("[PropWise] rename failed", e);
-      showToast("Could not rename analysis", "err");
-    }
-  }, [currentId, loadSaved, showToast]);
-
-  // Onboarding "Continue" — create a fresh analysis context carrying the basic
-  // metadata. One data model: this becomes the active analysis; Save later
-  // persists it (assigning the single id). Onboarding does not pre-save.
-  // Onboarding "Continue" — accepts the full wizard payload (basic + property +
-  // financial). Each step must be completed before the report opens, so the
-  // active analysis always starts with the core details filled in.
-  const startAnalysis = useCallback((data = {}) => {
-    setInputs({ ...DEFAULT_INPUTS, ...data });
-    setCurrentId(null);
-    setLoadError(null);
-    navigate("/analysis/affordability");
-  }, [navigate]);
-
-  // "New Analysis" routes to the onboarding page (it does not wipe first;
-  // onboarding wipes on Continue). Confirm first if there is unsaved work.
+      if (await loadById(id, true)) navigate(`/analysis/${id}`);
+      else showToast('Unable to open this analysis. Please retry.', 'err');
+    } finally { openLock.current = false; setOpeningId(null); }
+  }, [loadById, navigate, showToast, records.isSaving, records.busyId]);
+  const startAnalysis = useCallback(async data => {
+    setInputs(data);
+    const record = await records.write(data, false);
+    if (record) navigate(`/analysis/${record.id}`);
+    return record;
+  }, [setInputs, records.write, navigate]);
   const doNew = useCallback(() => {
+    if (records.isSaving || records.busyId) return;
     setConfirmNew(false);
-    navigate("/analysis/new");
-  }, [navigate]);
-
-  const requestNew = useCallback(() => {
-    // Only prompt when there is unsaved (not yet persisted) work to lose.
-    if (r.hasInputs && !currentId) setConfirmNew(true);
-    else doNew();
-  }, [r.hasInputs, currentId, doNew]);
+    store.reset();
+    navigate('/analysis/new');
+  }, [store.reset, navigate, records.isSaving, records.busyId]);
+  const requestNew = useCallback(() => { if (active?.dirty) setConfirmNew(true); else doNew(); }, [active?.dirty, doNew]);
 
   const exportReport = useCallback(() => {
     if (!r.hasInputs) {
@@ -293,6 +123,15 @@ export function AnalysisProvider({ children }) {
   }, [r, inputs, showToast]);
 
   const value = {
+    ...records,
+    wizard: workspace.wizard,
+    saveWizard,
+    initializeAnalysis: records.initialize,
+    analysisId: currentId,
+    active,
+    storageError: store.storageError,
+    analysisPath,
+    openingId,
     inputs,
     setInputs,
     set,

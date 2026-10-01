@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import CalcEngine from "@/components/propwise/home/CalcEngine";
+import { useAnalysis } from '@/lib/AnalysisContext';
 
 export default function Hero() {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
-  const start = () => navigate("/analysis/new");
+  const { requestNew: start } = useAnalysis();
   const how = () => {
     const el = document.getElementById("how-it-works");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -65,7 +66,7 @@ export default function Hero() {
 
             <div className="mt-4 inline-flex items-center gap-1.5 text-sm text-sub">
               <Check className="h-4 w-4 text-jade" />
-              No account required to start
+              Your analyses stay private
             </div>
           </motion.div>
 

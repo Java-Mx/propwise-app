@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Field, NumberInput, ChoiceInput, Select, Section, ResultCard, Stat, Pill, Divider, Alert, Button, ApplyBar } from "@/components/propwise/ui";
 import {
-  formatINR, formatCompact, formatPct, num, futureValue, calculateEMI,
+  formatINR, formatCompact, formatPct, num, futureValue, calculateEMI, remainingLoanBalance,
   RENT_GROWTH_OPTIONS, VACANCY_OPTIONS, PROJECTION_OPTIONS, APPRECIATION_OPTIONS,
 } from "@/lib/finance";
 import ScenarioCompare from "@/components/propwise/ScenarioCompare";
@@ -88,7 +88,7 @@ export function CommitmentModule({ r }) {
 }
 
 export function HorizonModule({ inputs, set, r }) {
-  const [years, setYears] = useState(inputs.projection_years || 10);
+  const [years, setYears] = useState(inputs.projection_years || 20);
   const dirty = num(years) !== num(inputs.projection_years);
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   const horizon = num(years);
@@ -98,7 +98,7 @@ export function HorizonModule({ inputs, set, r }) {
   const value = futureValue(r.price, r.appreciation, horizon);
   const equity = row ? row.equity : value - 0;
   const rentalCum = r.yearly.filter((d) => d.year <= horizon).reduce((s, d) => s + d.annualRentalIncome, 0);
-  const reset = () => setYears(inputs.projection_years || 10);
+  const reset = () => setYears(inputs.projection_years || 20);
   const apply = () => set("projection_years", years);
   return (
     <Section title="Investment Horizon" subtitle="Project outcomes over your chosen horizon.">
@@ -149,7 +149,7 @@ export function RentalYieldModule({ inputs, set, r }) {
   const dirty = num(rent) !== num(inputs.monthly_rent);
   const annualRent = num(rent) * 12;
   const gross = r.price > 0 ? (annualRent / r.price) * 100 : 0;
-  const net = r.price > 0 ? (r.netAnnualRental / r.price) * 100 : 0;
+  const net = r.price > 0 ? ((annualRent * (1 - num(inputs.vacancy_rate) / 100) - r.rentalCosts) / r.price) * 100 : 0;
   const reset = () => setRent(inputs.monthly_rent || "");
   const apply = () => set("monthly_rent", rent);
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
@@ -214,8 +214,8 @@ export function NetBenefitModule({ r }) {
         <Row label="Total monthly cost" value={`− ${formatINR(r.totalMonthlyCost)}`} />
       </div>
       <Divider />
-      <div className="rounded-xl p-4 text-white" style={{ backgroundColor: color }}>
-        <div className="text-xs uppercase tracking-wide text-white/80">Monthly Net {monthlyNet >= 0 ? "Benefit" : "Cost"}</div>
+      <div className={`rounded-xl p-4 text-white ${monthlyNet > 0 ? 'bg-ok' : monthlyNet < 0 ? 'bg-err' : 'bg-brand'}`}>
+        <div className="text-xs uppercase tracking-wide text-onfilled">Monthly Net {monthlyNet >= 0 ? "Benefit" : "Cost"}</div>
         <div className="mt-1 text-3xl font-semibold">{formatINR(Math.abs(monthlyNet))}</div>
       </div>
       {r.monthlyRent > 0 && (
@@ -245,11 +245,11 @@ export function NetBenefitModule({ r }) {
 
 export function ValueProjectionModule({ inputs, set, r }) {
   const t = useChartTheme();
-  const [apprec, setApprec] = useState(inputs.annual_appreciation || 5);
+  const [apprec, setApprec] = useState(num(inputs.annual_appreciation));
   const [years, setYears] = useState(inputs.projection_years || 20);
   const dirty = num(apprec) !== num(inputs.annual_appreciation) || num(years) !== num(inputs.projection_years);
   const data = Array.from({ length: num(years) + 1 }, (_, i) => ({ year: i, value: Math.round(futureValue(r.price, num(apprec), i)) }));
-  const reset = () => { setApprec(inputs.annual_appreciation || 5); setYears(inputs.projection_years || 20); };
+  const reset = () => { setApprec(num(inputs.annual_appreciation)); setYears(inputs.projection_years || 20); };
   const apply = () => { set("annual_appreciation", apprec); set("projection_years", years); };
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   return (
@@ -307,7 +307,7 @@ export function EquityModule({ r }) {
 function inputs_projection(r) { return 10; }
 
 export function YearlyModule({ inputs, r }) {
-  const [span, setSpan] = useState(inputs.projection_years || 10);
+  const [span, setSpan] = useState(inputs.projection_years || 20);
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   const data = r.yearly.filter((d) => d.year <= span);
   return (
@@ -375,8 +375,8 @@ export function PropertyCompareModule({ inputs }) {
     const monthlyCost = emi;
     const yield_ = price > 0 ? (rent * 12 / price) * 100 : 0;
     const fv10 = futureValue(price, 5, 10);
-    const equity10 = fv10 - Math.max(loan - (emi * 12 * 10 > loan ? 0 : 0), 0);
-    return { price, loan, emi, monthlyCost, rent, yield_, fv10, equity10: fv10 - Math.max(loan, 0) };
+    const equity10 = fv10 - remainingLoanBalance(loan, rate, tenure, 10);
+    return { price, loan, emi, monthlyCost, rent, yield_, fv10, equity10 };
   });
   const metrics = [
     { label: "Property Price", fmt: (s) => formatCompact(s.price) },

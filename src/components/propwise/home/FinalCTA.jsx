@@ -2,9 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useAnalysis } from '@/lib/AnalysisContext';
 
 export default function FinalCTA() {
-  const navigate = useNavigate();
+  const { requestNew } = useAnalysis();
   const reduce = useReducedMotion();
   return (
     <section className="bg-brand">
@@ -19,11 +20,11 @@ export default function FinalCTA() {
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Ready to understand the numbers?
           </h2>
-          <p className="mt-3 text-base text-white/80">
+          <p className="mt-3 text-base text-onfilled">
             Start with the property you're considering.
           </p>
           <button
-            onClick={() => navigate("/analysis/affordability")}
+            onClick={requestNew}
             className="mt-8 inline-flex h-12 items-center gap-2 rounded-lg bg-jade px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#26786E]"
           >
             Start Property Analysis

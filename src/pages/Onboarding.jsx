@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { newKey } from '@/components/propwise/state/analysisModel';
 import { useAnalysis } from "@/lib/AnalysisContext";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/propwise/Logo";
@@ -18,21 +19,37 @@ const STEPS = [
 ];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INPUT_CLS =
-  "h-12 w-full rounded-xl border border-line bg-inputbg px-3.5 text-sm font-medium text-ink outline-none transition placeholder:text-sub/50 focus:border-jade focus:ring-2 focus:ring-jade/15";
+  "h-12 w-full rounded-xl border border-line bg-inputbg px-3.5 text-sm font-medium text-ink outline-none transition placeholder:text-muted-foreground focus:border-jade focus:ring-2 focus:ring-jade/15";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const analysis = useAnalysis();
-  const [step, setStep] = useState(1);
-  const [reached, setReached] = useState(1);
-  const [form, setForm] = useState({
-    reportName: "", fullName: "", email: "", location: "",
-    property_type: "Apartment", property_price: "",
-    monthly_income: "", existing_emi: "", amount_saved: "",
-    home_loan_percentage: "", interest_rate: "", loan_tenure_years: "",
+  const location = useLocation();
+  const initial = new URLSearchParams(location.search).has('step') || !analysis.active?.report_ready ? analysis.wizard : null;
+  const [step, setStep] = useState(initial?.step || 1);
+  const [reached, setReached] = useState(initial?.reached || 1);
+  const [draftKey] = useState(initial?.draftKey || newKey());
+  const [draftId, setDraftId] = useState(initial?.analysisId || null);
+  const [form, setForm] = useState(initial?.form || {
+    reportName: '', fullName: '', email: '', location: '',
+    property_type: 'Apartment', property_price: '', monthly_income: '', existing_emi: '', amount_saved: '',
+    home_loan_percentage: '', interest_rate: '', loan_tenure_years: '',
   });
   const [touched, setTouched] = useState({});
   const [submitError, setSubmitError] = useState(null);
+  const payload = () => ({
+    title: form.reportName.trim(), owner_name: form.fullName.trim(), owner_email: form.email.trim(),
+    property_location: form.location.trim(), property_type: form.property_type, property_price: num(form.property_price),
+    amount_saved: num(form.amount_saved), monthly_income: num(form.monthly_income), existing_emi: num(form.existing_emi),
+    home_loan_percentage: num(form.home_loan_percentage), interest_rate: num(form.interest_rate), loan_tenure_years: num(form.loan_tenure_years),
+  });
+  useEffect(() => { analysis.saveWizard({ form, step, reached, draftKey, analysisId: draftId }); }, [form, step, reached, draftKey, draftId, analysis.saveWizard]);
+  useEffect(() => {
+    const requested = Number(new URLSearchParams(location.search).get('step')) || 1;
+    const allowed = Math.max(1, Math.min(requested, reached));
+    setStep(allowed);
+  }, [location.search]);
+  const goStep = n => { setStep(n); navigate(`/analysis/new?step=${n}`); };
 
   const set = (k, v) => {
     setForm((p) => ({ ...p, [k]: v }));
@@ -67,42 +84,32 @@ export default function Onboarding() {
     if (s === 3) setTouched((p) => ({ ...p, monthly_income: true, home_loan_percentage: true, interest_rate: true, loan_tenure_years: true }));
   };
 
-  const goNext = () => {
+  const goNext = async () => {
+    if (analysis.isSaving) return;
     if (!stepValid(step)) { touchStep(step); return; }
-    const n = Math.min(4, step + 1);
-    setStep(n);
-    setReached((r) => Math.max(r, n));
-  };
-  const goBack = () => setStep((s) => Math.max(1, s - 1));
-  const goTo = (n) => { if (n <= reached) setStep(n); };
-
-  const finish = () => {
-    if (!allValid) {
-      touchStep(1); touchStep(2); touchStep(3);
-      setStep(1);
-      setSubmitError("Please complete all required details before viewing the report.");
-      return;
-    }
     try {
-      setSubmitError(null);
-      analysis.startAnalysis({
-        title: form.reportName.trim(),
-        owner_name: form.fullName.trim(),
-        owner_email: form.email.trim(),
-        property_location: form.location.trim(),
-        property_type: form.property_type,
-        property_price: num(form.property_price),
-        amount_saved: num(form.amount_saved),
-        monthly_income: num(form.monthly_income),
-        existing_emi: num(form.existing_emi),
-        home_loan_percentage: num(form.home_loan_percentage),
-        interest_rate: num(form.interest_rate),
-        loan_tenure_years: num(form.loan_tenure_years),
-      });
-    } catch (err) {
-      console.error("[PropWise] startAnalysis failed", err);
-      setSubmitError("Unable to start this analysis. Please try again.");
+      if (step === 1) {
+        const record = await analysis.initializeAnalysis(payload(), draftKey, draftId);
+        if (!record) return;
+        setDraftId(record.id);
+        analysis.saveWizard({ form, step: 2, reached: Math.max(reached, 2), draftKey, analysisId: record.id });
+      }
+      const n = Math.min(4, step + 1);
+      setReached(r => Math.max(r, n));
+      goStep(n);
+    } catch (error) { setSubmitError(error.message); }
+  };
+  const goBack = () => goStep(Math.max(1, step - 1));
+  const goTo = n => { if (n <= reached && !analysis.isSaving) goStep(n); };
+  const finish = async () => {
+    if (analysis.isSaving) return;
+    if (!allValid) {
+      touchStep(1); touchStep(2); touchStep(3); goStep(1);
+      setSubmitError('Please complete all required details before viewing the report.'); return;
     }
+    setSubmitError(null);
+    const record = await analysis.startAnalysis({ ...analysis.inputs, ...payload() });
+    if (!record) return;
   };
 
   const back = () => { if (window.history.length > 1) navigate(-1); else navigate("/"); };
@@ -122,7 +129,7 @@ export default function Onboarding() {
           <div className="mb-6 flex flex-col items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
             <div className="flex items-center gap-2">
               <span className="text-jade">Step {step} of 4</span>
-              <span className="text-sub/70">·</span>
+              <span className="text-sub">·</span>
               <span className="text-sub sm:hidden">{STEPS[step - 1].label}</span>
               <span className="hidden sm:inline">
                 {STEPS.map((s, i) => {
@@ -143,7 +150,7 @@ export default function Onboarding() {
                       >
                         {s.label}
                       </button>
-                      {i < STEPS.length - 1 && <span className="text-sub/70"> · </span>}
+                      {i < STEPS.length - 1 && <span className="text-sub"> · </span>}
                     </React.Fragment>
                   );
                 })}
@@ -172,7 +179,7 @@ export default function Onboarding() {
                     onBlur={() => setTouched((p) => ({ ...p, reportName: true }))}
                     placeholder="e.g. Pune Apartment Analysis" className={INPUT_CLS} />
                 </Field>
-                <Field label="Your Name" error={touched.fullName && errs.fullName}>
+                <Field label="Full Name" error={touched.fullName && errs.fullName}>
                   <input type="text" value={form.fullName} onChange={(e) => set("fullName", e.target.value)}
                     onBlur={() => setTouched((p) => ({ ...p, fullName: true }))}
                     placeholder="Enter your name" className={INPUT_CLS} />
@@ -226,10 +233,10 @@ export default function Onboarding() {
 
             {step === 4 && <Review form={form} onEdit={goTo} allValid={allValid} />}
 
-            {submitError && (
+            {(submitError || analysis.saveError || analysis.storageError) && (
               <div className="mt-4 flex items-start gap-2 rounded-lg border border-err/20 bg-[#FBECEC] px-3 py-2.5 text-sm text-err">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{submitError}</span>
+                <span role="alert">{submitError || analysis.saveError || analysis.storageError}</span>
               </div>
             )}
 
@@ -241,21 +248,21 @@ export default function Onboarding() {
                 </button>
               )}
               {step < 4 ? (
-                <button type="submit"
+                <button type="submit" disabled={analysis.isSaving}
                   className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-jade px-6 text-[15px] font-semibold text-white shadow-[0_6px_16px_rgba(47,143,131,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(47,143,131,0.24)] active:translate-y-0 sm:flex-none">
-                  Continue <ArrowRight className="h-4 w-4" />
+                  {analysis.isSaving ? 'Initializing…' : 'Continue'} <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button type="submit" disabled={!allValid}
+                <button type="submit" disabled={!allValid || analysis.isSaving}
                   className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-jade px-6 text-[15px] font-semibold text-white shadow-[0_6px_16px_rgba(47,143,131,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(47,143,131,0.24)] active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none sm:flex-none">
-                  <Check className="h-4 w-4" /> Continue to full report
+                  <Check className="h-4 w-4" /> {analysis.isSaving ? 'Generating report…' : 'Continue to full report'}
                 </button>
               )}
             </div>
           </form>
 
           <p className="mt-4 text-center text-xs text-sub">
-            Your details stay with this analysis. We won't send emails or share your information.
+            Your details stay with this private analysis. Shared report links only show a read-only financial report; your email stays private.
           </p>
         </div>
       </main>

@@ -1,7 +1,7 @@
 // PropWise — financial calculation engine
 // Transparent estimates based on user-provided assumptions.
 
-const num = (v) => (v === "" || v == null || isNaN(+v)) ? 0 : +v;
+const num = (v) => (v === "" || v == null || !Number.isFinite(+v)) ? 0 : +v;
 export { num };
 
 // All fields start empty — no demo or preloaded values.
@@ -88,6 +88,17 @@ export function calculateEMI(principal, annualRatePct, months) {
   if (r === 0) return principal / months;
   const f = Math.pow(1 + r, months);
   return (principal * r * f) / (f - 1);
+}
+
+export function remainingLoanBalance(principal, annualRatePct, tenureYears, elapsedYears) {
+  const totalMonths = num(tenureYears) * 12;
+  const elapsed = num(elapsedYears) * 12;
+  if (totalMonths <= 0 || elapsed >= totalMonths) return 0;
+  const payment = calculateEMI(principal, annualRatePct, totalMonths);
+  const monthlyRate = annualRatePct / 1200;
+  if (monthlyRate === 0) return Math.max(principal - payment * elapsed, 0);
+  const factor = Math.pow(1 + monthlyRate, elapsed);
+  return Math.max(principal * factor - payment * (factor - 1) / monthlyRate, 0);
 }
 
 export function futureValue(present, annualRatePct, years) {

@@ -42,7 +42,7 @@ function ToolsSheet({ open, onClose }) {
   const act = (action) => {
     switch (action) {
       case "new": analysis.requestNew(); close(); break;
-      case "save": analysis.requestSave(); close(); break;
+      case "save": analysis.requestSave(); break;
       case "export": analysis.exportReport(); close(); break;
       case "saved": navigate("/tools/saved"); close(); break;
       case "sources": navigate("/tools/sources"); close(); break;
@@ -78,6 +78,7 @@ function ToolsSheet({ open, onClose }) {
             );
           })}
         </div>
+        {analysis.saveError && <p className="mb-3 text-sm text-err" role="alert">{analysis.saveError}</p>}
         <div className="mb-1 flex items-center justify-between px-1">
           <h3 className="text-base font-semibold text-ink">Tools</h3>
           <button onClick={close} className="rounded-lg p-2 text-sub hover:bg-appbg" aria-label="Close">
@@ -115,10 +116,11 @@ function ToolsSheet({ open, onClose }) {
                 <button
                   key={o.label}
                   onClick={() => act(o.action)}
+                  disabled={['save', 'new'].includes(o.action) && (analysis.isSaving || !!analysis.busyId)}
                   className="flex h-[52px] w-full items-center gap-3 px-1 text-left active:scale-[0.99] transition"
                 >
                   <Icon className="h-5 w-5 text-jade" />
-                  <span className="text-[15px] font-medium text-ink">{o.label}</span>
+                  <span className="text-[15px] font-medium text-ink">{o.action === 'save' && analysis.isSaving ? 'Saving…' : o.label}</span>
                 </button>
               );
             })}

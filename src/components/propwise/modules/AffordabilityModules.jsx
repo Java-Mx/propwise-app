@@ -23,6 +23,9 @@ export function SetupModule({ inputs, set, r }) {
       )}
       <Section title="Property & Loan Details" subtitle="The only place core assumptions are edited — everything else updates from here.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Field label="Full Name"><input value={inputs.owner_name || ''} onChange={e => set('owner_name', e.target.value)} placeholder="Full name" className="h-11 w-full rounded-lg border border-line bg-inputbg px-3 text-sm text-ink outline-none focus:border-jade" /></Field>
+          <Field label="Email"><input type="email" value={inputs.owner_email || ''} onChange={e => set('owner_email', e.target.value)} placeholder="you@example.com" className="h-11 w-full rounded-lg border border-line bg-inputbg px-3 text-sm text-ink outline-none focus:border-jade" /></Field>
+          <Field label="Property / Location (Optional)"><input value={inputs.property_location || ''} onChange={e => set('property_location', e.target.value)} placeholder="Property / location" className="h-11 w-full rounded-lg border border-line bg-inputbg px-3 text-sm text-ink outline-none focus:border-jade" /></Field>
           <Field label="Property Price"><NumberInput value={inputs.property_price} onChange={(v) => set("property_price", v)} /></Field>
           <Field label="Available Savings"><NumberInput value={inputs.amount_saved} onChange={(v) => set("amount_saved", v)} /></Field>
           <Field label="Property Type"><Select value={inputs.property_type} onChange={(v) => set("property_type", v)} options={PROPERTY_TYPES} placeholder="Select type" renderOption={(o) => o} /></Field>
@@ -56,7 +59,7 @@ export function CheckModule({ r }) {
         <Divider />
         <div className="flex items-baseline gap-3">
           <span className="text-3xl font-semibold text-ink">{formatPct(r.incomeBurden)}</span>
-          <span className="text-sm text-sub">EMI-to-income ratio</span>
+          <span className="text-sm text-sub">Property-cost-to-income ratio</span>
           <Pill color={r.level.color}>{r.level.label} commitment</Pill>
         </div>
         <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-appbg">
@@ -159,15 +162,15 @@ export function PayoffExplorer({ r }) {
 
 export function FutureValueModule({ inputs, set, r }) {
   const t = useChartTheme();
-  const [apprec, setApprec] = useState(inputs.annual_appreciation || 5);
-  const [years, setYears] = useState(inputs.projection_years || 10);
+  const [apprec, setApprec] = useState(num(inputs.annual_appreciation));
+  const [years, setYears] = useState(inputs.projection_years || 20);
   const dirty = num(apprec) !== num(inputs.annual_appreciation) || num(years) !== num(inputs.projection_years);
   const fv = (y) => futureValue(num(r.price), num(apprec), y);
   const data = Array.from({ length: num(years) + 1 }, (_, i) => ({ year: i, value: Math.round(fv(i)) }));
   const projected = fv(num(years));
   const growth = projected - num(r.price);
   const annualized = num(years) > 0 ? (Math.pow(projected / Math.max(num(r.price), 1), 1 / num(years)) - 1) * 100 : 0;
-  const reset = () => { setApprec(inputs.annual_appreciation || 5); setYears(inputs.projection_years || 10); };
+  const reset = () => { setApprec(num(inputs.annual_appreciation)); setYears(inputs.projection_years || 20); };
   const apply = () => { set("annual_appreciation", apprec); set("projection_years", years); };
   if (!r.hasInputs) return <Alert tone="info">Enter a property price in Property & Loan Setup first.</Alert>;
   return (

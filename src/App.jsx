@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -14,10 +14,19 @@ import Sources from '@/pages/Sources';
 import { AnalysisProvider } from '@/lib/AnalysisContext';
 import { MobileToolsProvider } from '@/components/propwise/MobileTools';
 import AmbientBackground from '@/components/propwise/AmbientBackground';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import SharedReport from '@/pages/SharedReport';
 // Add page imports here
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
+  const location = useLocation();
+  const authPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+  const loginRedirect = <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -29,30 +38,34 @@ const AuthenticatedApp = () => {
   }
 
   // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+  if (authError && !authPage) {
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') return loginRedirect;
+    return <div className="p-8 text-ink" role="alert">Unable to load the app. Please refresh and try again.</div>;
   }
 
   // Render the main app
   return (
-    <AnalysisProvider>
+    <AnalysisProvider key={user?.id || 'guest'}>
       <MobileToolsProvider>
       <Routes>
         {/* Add your page Route elements here */}
         <Route path="/" element={<Landing />} />
-        <Route path="/analysis/new" element={<Onboarding />} />
-        <Route path="/analysis/affordability" element={<Analysis />} />
-        <Route path="/analysis/property-costs" element={<Analysis />} />
-        <Route path="/analysis/investment" element={<Analysis />} />
-        <Route path="/analysis/:id" element={<Analysis />} />
-        <Route path="/tools/saved" element={<SavedAnalyses />} />
-        <Route path="/tools/sources" element={<Sources />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={loginRedirect} />}>
+          <Route path="/analysis" element={<Navigate to="/analysis/new" replace />} />
+          <Route path="/analysis/new" element={<Onboarding />} />
+          <Route path="/analysis/affordability" element={<Analysis />} />
+          <Route path="/analysis/property-costs" element={<Analysis />} />
+          <Route path="/analysis/investment" element={<Analysis />} />
+          <Route path="/analysis/:id" element={<Analysis />} />
+          <Route path="/tools/saved" element={<SavedAnalyses />} />
+          <Route path="/tools/sources" element={<Sources />} />
+          <Route path="/shared/:id" element={<SharedReport />} />
+        </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       </MobileToolsProvider>

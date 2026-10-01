@@ -29,7 +29,7 @@ const REGISTRY = {
 export default function ModuleHost({ group }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { inputs, set, r } = useAnalysis();
+  const { inputs, set, r, analysisPath, currentId } = useAnalysis();
   const groupMeta = GROUPS[group];
   const list = useMemo(() => moduleList(group), [group]);
 
@@ -39,7 +39,7 @@ export default function ModuleHost({ group }) {
   const mod = MODULES[activeKey];
   const Mod = REGISTRY[activeKey];
 
-  const select = (key) => navigate(`${groupMeta.route}?m=${key}`);
+  const select = (key) => navigate(analysisPath(groupMeta.route, key));
   const Icon = mod.icon;
 
   return (
@@ -84,7 +84,7 @@ export default function ModuleHost({ group }) {
       </div>
 
       {/* Module */}
-      {Mod ? <Mod inputs={inputs} set={set} r={r} /> : <div className="text-sm text-sub">Module not found.</div>}
+      {Mod ? <Mod key={`${currentId}:${activeKey}`} inputs={inputs} set={set} r={r} /> : <div className="text-sm text-sub">Module not found.</div>}
     </div>
   );
 }

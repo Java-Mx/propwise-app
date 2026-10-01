@@ -52,6 +52,7 @@
     },
     "costs": {
       "type": "array",
+      "default": [],
       "items": {
         "type": "object",
         "properties": {
@@ -84,8 +85,7 @@
             ]
           }
         }
-      },
-      "default": []
+      }
     },
     "monthly_rent": {
       "type": "number",
@@ -117,6 +117,7 @@
     },
     "scenarios": {
       "type": "array",
+      "default": [],
       "items": {
         "type": "object",
         "properties": {
@@ -148,8 +149,46 @@
             "default": 0
           }
         }
-      },
-      "default": []
+      }
+    },
+    "draft_key": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "saved"
+      ],
+      "default": "saved"
+    },
+    "report_ready": {
+      "type": "boolean",
+      "default": true
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": [
+        "created",
+        "updated"
+      ],
+      "default": "created"
+    },
+    "saved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "calculation_version": {
+      "type": "number"
+    },
+    "calculated": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Confirmed financial results, EMI, loan amount, amortization and yearly property/loan/equity projections at save time."
+    },
+    "share_token": {
+      "type": "string",
+      "default": ""
     }
   },
   "required": [

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Calculator, Wallet, TrendingUp, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileTools } from "@/components/propwise/MobileTools";
+import { useAnalysis } from '@/lib/AnalysisContext';
 
 const ITEMS = [
   { key: "affordability", label: "Affordability", icon: Calculator, path: "/analysis/affordability" },
@@ -16,10 +17,11 @@ export default function BottomNav() {
   const location = useLocation();
   const { openTools } = useMobileTools();
 
-  const active = location.pathname.startsWith("/analysis/affordability") ? "affordability"
+  const { analysisPath } = useAnalysis();
+  const active = new URLSearchParams(location.search).get('group') || (location.pathname.startsWith("/analysis/affordability") ? "affordability"
     : location.pathname.startsWith("/analysis/property-costs") ? "costs"
     : location.pathname.startsWith("/analysis/investment") ? "investment"
-    : null;
+    : location.pathname.startsWith('/analysis/') ? 'affordability' : null);
 
   return (
     <div className="fixed inset-x-3 bottom-3 z-40 md:hidden">
@@ -30,7 +32,7 @@ export default function BottomNav() {
           return (
             <button
               key={it.key}
-              onClick={() => navigate(it.path)}
+              onClick={() => navigate(analysisPath(it.path))}
               className={cn(
                 "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition active:scale-[0.98]",
                 isActive ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "text-sub"

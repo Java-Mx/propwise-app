@@ -73,7 +73,7 @@ export function NumberInput({ value, onChange, prefix = "₹", suffix, placehold
           const digits = e.target.value.replace(/[^\d]/g, "");
           onChange(digits === "" ? "" : Number(digits));
         }}
-        className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-sub/50"
+        className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted-foreground"
       />
       {suffix && <span className="ml-1.5 text-sm text-sub select-none">{suffix}</span>}
     </div>
@@ -82,8 +82,9 @@ export function NumberInput({ value, onChange, prefix = "₹", suffix, placehold
 
 export function PercentInput({ value, onChange, disabled, compact }) {
   const [focused, setFocused] = useState(false);
-  const v = value ?? "";
-  const display = focused ? (v === "" ? "" : String(v)) : (v === "" || v == null ? "" : String(v));
+  const [draft, setDraft] = useState('');
+  const v = value ?? '';
+  const display = focused ? draft : String(v);
   return (
     <div className={cn(
       "flex items-center rounded-lg border border-line bg-inputbg transition focus-within:border-jade focus-within:ring-2 focus-within:ring-jade/15",
@@ -95,13 +96,16 @@ export function PercentInput({ value, onChange, disabled, compact }) {
         value={display}
         placeholder="0"
         disabled={disabled}
-        onFocus={(e) => { setFocused(true); e.target.select(); }}
+        onFocus={(e) => { setDraft(String(v)); setFocused(true); e.target.select(); }}
         onBlur={() => setFocused(false)}
         onChange={(e) => {
           const raw = e.target.value.replace(/[^\d.]/g, "");
-          onChange(raw === "" ? "" : Number(raw));
+          if (/^\d*(\.\d*)?$/.test(raw)) {
+            setDraft(raw);
+            onChange(raw === '' || raw === '.' ? '' : Number(raw));
+          }
         }}
-        className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-sub/50"
+        className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted-foreground"
       />
       <span className="ml-1.5 text-sm text-sub select-none">%</span>
     </div>
@@ -123,7 +127,7 @@ export function Select({ value, onChange, options, placeholder, disabled, render
       }}
       className={cn(
         "h-11 w-full rounded-lg border border-line bg-inputbg px-3 text-sm font-medium text-ink outline-none transition focus:border-jade focus:ring-2 focus:ring-jade/15",
-        (value === "" || value == null) && "text-sub/60"
+        (value === "" || value == null) && "text-sub"
       )}
     >
       {placeholder && <option value="">{placeholder}</option>}
@@ -137,7 +141,7 @@ export function Select({ value, onChange, options, placeholder, disabled, render
 // ---------- Choice input (presets + custom reveal) ----------
 
 export function ChoiceInput({ value, onChange, options, suffix = "%", allowCustom = true, placeholder = "Select", renderOption }) {
-  const isPreset = options.some((o) => Number(o) === Number(value));
+  const isPreset = value !== '' && value != null && options.some((o) => Number(o) === Number(value));
   const [custom, setCustom] = useState(allowCustom && !isPreset && value !== "" && value != null);
 
   if (custom && allowCustom) {
@@ -163,7 +167,7 @@ export function ChoiceInput({ value, onChange, options, suffix = "%", allowCusto
       }}
       className={cn(
         "h-11 w-full rounded-lg border border-line bg-inputbg px-3 text-sm font-medium text-ink outline-none transition focus:border-jade focus:ring-2 focus:ring-jade/15",
-        !isPreset && "text-sub/60"
+        !isPreset && "text-sub"
       )}
     >
       <option value="" disabled>{placeholder}</option>
@@ -230,9 +234,9 @@ export function ResultCard({ label, value, sub, emphasis = false, tone }) {
       "rounded-xl border p-4",
       green ? "border-jade bg-jade text-white" : emphasis ? "border-brand bg-brand text-white" : "border-line bg-white"
     )}>
-      <div className={cn("text-xs font-medium uppercase tracking-wide", filled ? "text-white/80" : "text-sub")}>{label}</div>
+      <div className={cn("text-xs font-medium uppercase tracking-wide", filled ? "text-onfilled" : "text-sub")}>{label}</div>
       <div className={cn("mt-1 text-xl font-semibold", valueColor)}>{value}</div>
-      {sub && <div className={cn("mt-1 text-xs", filled ? "text-white/80" : "text-sub")}>{sub}</div>}
+      {sub && <div className={cn("mt-1 text-xs", filled ? "text-onfilled" : "text-sub")}>{sub}</div>}
     </div>
   );
 }
@@ -248,14 +252,8 @@ export function Stat({ label, value, sub }) {
 }
 
 export function Pill({ children, color }) {
-  return (
-    <span
-      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-white"
-      style={{ backgroundColor: color || "#52627A" }}
-    >
-      {children}
-    </span>
-  );
+  const tone = color === '#2F8F6B' ? 'bg-ok' : color === '#C58B32' ? 'bg-warn' : color === '#B95C5C' ? 'bg-err' : 'bg-brand';
+  return <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-white', tone)}>{children}</span>;
 }
 
 export function Divider({ label }) {
@@ -288,7 +286,7 @@ export function Alert({ tone = "warn", children }) {
 
 // ---------- Confirm dialog ----------
 
-export function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", cancelLabel = "Cancel", onConfirm, onCancel, danger }) {
+export function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", cancelLabel = "Cancel", onConfirm, onCancel, danger, loading = false }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onCancel}>
@@ -296,8 +294,8 @@ export function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", 
         <h3 className="text-base font-semibold text-ink">{title}</h3>
         <p className="mt-2 text-sm text-sub">{message}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="secondary" size="md" onClick={onCancel}>{cancelLabel}</Button>
-          <Button variant={danger ? "danger" : "primary"} size="md" onClick={onConfirm}>{confirmLabel}</Button>
+          <Button variant="secondary" size="md" disabled={loading} onClick={onCancel}>{cancelLabel}</Button>
+          <Button variant={danger ? "danger" : "primary"} size="md" loading={loading} onClick={onConfirm}>{confirmLabel}</Button>
         </div>
       </div>
     </div>

@@ -55,6 +55,7 @@ module.exports = {
   			brand: 'hsl(var(--pw-brand) / <alpha-value>)',
   			steel: 'hsl(var(--pw-steel) / <alpha-value>)',
   			jade: 'hsl(var(--pw-jade) / <alpha-value>)',
+            onfilled: 'hsl(var(--pw-onfilled))',
   			ok: 'hsl(var(--pw-ok) / <alpha-value>)',
   			warn: 'hsl(var(--pw-warn) / <alpha-value>)',
   			err: 'hsl(var(--pw-err) / <alpha-value>)',

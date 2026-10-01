@@ -27,10 +27,10 @@ export default function PropWiseHeader() {
   const [renameVal, setRenameVal] = useState(analysis.inputs.title || "");
   const navRef = useRef(null);
 
-  const currentGroup = location.pathname.startsWith("/analysis/affordability") ? "affordability"
+  const currentGroup = new URLSearchParams(location.search).get('group') || (location.pathname.startsWith("/analysis/affordability") ? "affordability"
     : location.pathname.startsWith("/analysis/property-costs") ? "costs"
     : location.pathname.startsWith("/analysis/investment") ? "investment"
-    : location.pathname.startsWith("/tools") ? "tools" : null;
+    : location.pathname.startsWith("/tools") ? "tools" : location.pathname.startsWith('/analysis/') && location.pathname !== '/analysis/new' ? 'affordability' : null);
   const currentModule = new URLSearchParams(location.search).get("m");
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function PropWiseHeader() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const goModule = (mod) => { setOpenMenu(null); navigate(`${mod.route}?m=${mod.key}`); };
+  const goModule = (mod) => { setOpenMenu(null); navigate(analysis.analysisPath(mod.route, mod.key)); };
 
   const handleAction = (item) => {
     setOpenMenu(null);
@@ -109,11 +109,12 @@ export default function PropWiseHeader() {
           <button
             key={item.key}
             onClick={() => handleAction(item)}
+            disabled={['save', 'new'].includes(item.key) && (analysis.isSaving || !!analysis.busyId)}
             className="group flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left transition hover:bg-[#E8F5F1]"
           >
             <Icon className="mt-0.5 h-4 w-4 shrink-0 text-jade" />
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">{item.label}</span>
+              <span className="block text-sm font-medium text-ink">{item.key === 'save' && analysis.isSaving ? 'Saving…' : item.label}</span>
               <span className="block text-xs text-sub">{item.desc}</span>
             </span>
           </button>
@@ -190,7 +191,7 @@ export default function PropWiseHeader() {
           return (
             <button
               key={menu.key}
-              onClick={() => navigate(GROUPS[menu.key].route)}
+              onClick={() => navigate(analysis.analysisPath(GROUPS[menu.key].route))}
               className={cn(
                 "flex h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium transition active:scale-[0.98]",
                 isActive ? "bg-[#1A3A37] text-[#5BB8A8] ring-1 ring-[#49A99A]" : "border border-line bg-white text-steel"
@@ -277,12 +278,13 @@ export default function PropWiseHeader() {
 
       <Modal open={analysis.namePrompt} onClose={() => analysis.setNamePrompt(false)} title="Name this analysis">
         <div className="space-y-3">
+          {analysis.saveError && <p className="text-sm text-err" role="alert">{analysis.saveError}</p>}
           <div className="flex h-11 items-center rounded-md border border-line bg-white px-3">
             <input autoFocus value={analysis.nameVal} onChange={(e) => analysis.setNameVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && analysis.confirmNameSave()} placeholder="Analysis name" className="w-full bg-transparent text-sm text-ink outline-none" />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" size="md" onClick={() => analysis.setNamePrompt(false)}>Cancel</Button>
-            <Button variant="primary" size="md" onClick={analysis.confirmNameSave}>Save Analysis</Button>
+            <Button variant="primary" size="md" loading={analysis.isSaving} disabled={!analysis.nameVal.trim()} onClick={analysis.confirmNameSave}>Save Analysis</Button>
           </div>
         </div>
       </Modal>

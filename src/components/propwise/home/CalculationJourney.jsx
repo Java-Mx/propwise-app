@@ -67,7 +67,7 @@ export default function CalculationJourney() {
                 />
               </div>
               <motion.div
-                animate={{ opacity: isActive ? 1 : 0.45 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
                 className={cn(
                   "rounded-xl border bg-white px-5 py-4 transition-colors",

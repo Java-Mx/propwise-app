@@ -70,7 +70,7 @@ export default function CalcEngine() {
                 )}>{s.label}</span>
                 <span className={cn(
                   "text-[11px] font-medium uppercase tracking-wide transition-colors duration-300",
-                  finalFilled ? "text-white/80" : isCurrent ? "text-jade" : "text-sub"
+                  finalFilled ? "text-onfilled" : isCurrent ? "text-jade" : "text-sub"
                 )}>{s.status}</span>
               </div>
               {i < STAGES.length - 1 && (

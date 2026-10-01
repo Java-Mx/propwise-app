@@ -6,23 +6,23 @@
 @layer base {
   :root {
     --background: 214 41% 97%;
-    --foreground: 221 16% 14%;
+    --foreground: 212 29% 12.75%;
     --card: 0 0% 100%;
-    --card-foreground: 221 16% 14%;
+    --card-foreground: 212 29% 12.75%;
     --popover: 0 0% 100%;
-    --popover-foreground: 221 16% 14%;
+    --popover-foreground: 212 29% 12.75%;
     --primary: 221 41% 16%;
     --primary-foreground: 0 0% 100%;
     --secondary: 216 20% 40%;
     --secondary-foreground: 0 0% 100%;
     --muted: 220 20% 96%;
-    --muted-foreground: 215 15% 51%;
-    --accent: 173 50% 37%;
+    --muted-foreground: 221 13% 46%;
+    --accent: 173 52% 27%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 40% 54%;
     --destructive-foreground: 0 0% 98%;
-    --border: 216 29% 91%;
-    --input: 216 29% 91%;
+    --border: 214 25% 87.5%;
+    --input: 214 25% 87.5%;
     --ring: 221 41% 16%;
     --chart-1: 221 41% 16%;
     --chart-2: 173 50% 37%;
@@ -36,19 +36,23 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     /* PropWise palette — light values (CSS-variable driven so dark mode can override) */
     --pw-brand: 221 41% 16%;
-    --pw-steel: 216 20% 40%;
-    --pw-jade: 173 50% 37%;
-    --pw-ok: 164 49% 36%;
-    --pw-warn: 36 59% 48%;
-    --pw-err: 0 40% 54%;
+    --pw-steel: 215 14% 34%;
+    --pw-jade: 173 52% 27%;
+    --pw-ok: 173 52% 27%;
+    --pw-warn: 39 72% 30%;
+    --pw-err: 0 48% 39%;
     --pw-pagebg: 214 41% 97%;
     --pw-appbg: 220 25% 97%;
     --pw-inputbg: 0 0% 100%;
     --pw-jadebg: 163 45% 94%;
     --pw-navactive: 219 27% 95%;
-    --pw-ink: 221 38% 15%;
-    --pw-sub: 216 15% 52%;
-    --pw-line: 212 28% 90%;
+    --pw-ink: 212 29% 12.75%;
+    --pw-sub: 215 14% 34%;
+    --pw-line: 214 25% 87.5%;
+    --pw-jade-ink: 173 52% 27%;
+    --pw-ok-ink: 173 52% 27%;
+    --pw-err-ink: 0 48% 39%;
+    --pw-onfilled: 168 23% 88%;
     --pw-errbg: 0 60% 95%;
     --pw-warnbg: 38 70% 95%;
     --sidebar-background: 0 0% 98%;
@@ -62,56 +66,59 @@
   }
 
   .dark {
-    /* Premium charcoal / graphite atmosphere — near-black, not navy */
-    --background: 217 33% 5%;          /* #080B10 page */
-    --foreground: 210 20% 96%;        /* #F5F7F8 */
-    --card: 215 32% 7.5%;              /* #0D1219 primary card */
-    --card-foreground: 210 20% 96%;
-    --popover: 215 32% 7.5%;           /* #0D1219 dropdown */
-    --popover-foreground: 210 20% 96%;
-    --primary: 171 36% 24%;            /* #4FA89B teal accent */
+    --background: 217 33% 5%;
+    --foreground: 210 22% 96.5%;
+    --card: 215 32% 7.5%;
+    --card-foreground: 210 22% 96.5%;
+    --popover: 215 32% 7.5%;
+    --popover-foreground: 210 22% 96.5%;
+    --primary: 173 52% 27%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 30% 10.6%;       /* #131A23 elevated */
-    --secondary-foreground: 210 20% 96%;
-    --muted: 214 30% 9%;              /* #10161E inner surface */
-    --muted-foreground: 215 8% 31%;   /* #929DAC tertiary text (readable) */
-    --accent: 171 36% 24%;            /* #4FA89B */
+    --secondary: 214 30% 10.6%;
+    --secondary-foreground: 210 22% 96.5%;
+    --muted: 214 30% 9%;
+    --muted-foreground: 213 12% 60.4%;
+    --accent: 173 52% 27%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 52% 65%;
-    --destructive-foreground: 210 33% 97%;
-    --border: 213 22% 16%;            /* #202832 */
-    --input: 213 22% 16%;             /* #202832 */
-    --ring: 171 36% 24%;              /* #4FA89B */
-    --chart-1: 214 11% 37%;           /* #A8BAD2 property */
-    --chart-2: 216 15% 24%;           /* #68778D loan */
-    --chart-3: 215 9% 27%;            /* #7E8998 muted */
+    --destructive-foreground: 217 33% 5%;
+    --border: 213 22% 16%;
+    --input: 213 22% 16%;
+    --ring: 171 36% 49%;
+    --chart-1: 214 32% 74%;
+    --chart-2: 216 17% 62%;
+    --chart-3: 215 12% 62%;
     --chart-4: 37 64% 57%;
     --chart-5: 0 52% 65%;
-    /* PropWise palette — dark values (graphite + slate + teal accent) */
-    --pw-brand: 214 26% 14%;          /* #1B2330 graphite (filled surfaces) */
-    --pw-steel: 214 6% 36%;           /* #AEB8C5 nav/secondary text */
-    --pw-jade: 171 36% 24%;           /* #4FA89B teal accent */
-    --pw-ok: 171 36% 24%;             /* #4FA89B */
-    --pw-warn: 37 64% 57%;
-    --pw-err: 0 52% 65%;
-    --pw-pagebg: 217 33% 5%;          /* #080B10 */
-    --pw-appbg: 214 30% 9%;           /* #10161E inner surface */
-    --pw-inputbg: 214 28% 8%;         /* #0C1118 */
-    --pw-jadebg: 168 24% 11%;         /* #14211E very dark teal surface */
-    --pw-navactive: 213 28% 12%;      /* #151C26 active nav */
-    --pw-ink: 210 20% 96%;            /* #F5F7F8 */
-    --pw-sub: 214 5% 38%;             /* #B7C0CC secondary text (readable) */
-    --pw-line: 213 22% 16%;           /* #202832 */
+    --pw-brand: 214 26% 14%;
+    --pw-steel: 214 17% 75.9%;
+    --pw-jade: 173 52% 27%;
+    --pw-jade-ink: 171 36% 60%;
+    --pw-ok: 173 52% 27%;
+    --pw-ok-ink: 171 36% 60%;
+    --pw-warn: 39 72% 27%;
+    --pw-warn-ink: 37 64% 65%;
+    --pw-err: 0 43% 32%;
+    --pw-err-ink: 0 64% 76%;
+    --pw-pagebg: 217 33% 5%;
+    --pw-appbg: 214 30% 9%;
+    --pw-inputbg: 214 28% 8%;
+    --pw-jadebg: 168 24% 11%;
+    --pw-navactive: 213 28% 12%;
+    --pw-ink: 210 22% 96.5%;
+    --pw-sub: 214 17% 75.9%;
+    --pw-line: 213 22% 16%;
     --pw-errbg: 0 29% 14%;
     --pw-warnbg: 37 41% 14%;
-    --sidebar-background: 216 29% 7%; /* #0C1016 header */
-    --sidebar-foreground: 214 6% 36%; /* #AEB8C5 */
-    --sidebar-primary: 171 36% 24%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 213 30% 12%;   /* #151D27 hover */
-    --sidebar-accent-foreground: 210 20% 96%;
+    --pw-onfilled: 168 23% 88%;
+    --sidebar-background: 216 29% 7%;
+    --sidebar-foreground: 214 17% 75.9%;
+    --sidebar-primary: 173 52% 27%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 30% 12%;
+    --sidebar-accent-foreground: 210 22% 96.5%;
     --sidebar-border: 213 22% 16%;
-    --sidebar-ring: 171 36% 24%;
+    --sidebar-ring: 171 36% 49%;
   }
 }
 
@@ -176,8 +183,8 @@
 .dark .text-\[\#5BB8A8\] { color: #4FA89B; }
 .dark .ring-\[\#49A99A\] { --tw-ring-color: #4FA89B; }
 /* Primary teal button hover — lighter teal in dark (not the dark #26786E) */
-.dark .hover\:bg-\[\#26786E\]:hover { background-color: #5AB3A5; }
-.dark .hover\:bg-\[\#26776E\]:hover { background-color: #5AB3A5; }
+.dark .hover\:bg-\[\#26786E\]:hover { background-color: hsl(var(--pw-jade)); }
+.dark .hover\:bg-\[\#26776E\]:hover { background-color: hsl(var(--pw-jade)); }
 /* Teal link hover — brighter teal in dark (not the dark #26786E) */
 .dark .hover\:text-\[\#26786E\]:hover { color: #69BCAF; }
 .dark .text-\[\#26786E\] { color: #55AD9F; }
@@ -241,3 +248,15 @@
 @media (max-width: 640px) {
   .pw-sym { animation-duration: 42s !important; }
 }
+
+/* Solid semantic text colors: background accents and readable text have
+   distinct roles; no opacity/filter is used to create text hierarchy. */
+.text-jade, .hover\:text-jade:hover { color: hsl(var(--pw-jade-ink)); }
+.text-ok { color: hsl(var(--pw-ok-ink)); }
+.text-err { color: hsl(var(--pw-err-ink)); }
+.dark .text-warn { color: hsl(var(--pw-warn-ink)); }
+.dark .text-primary { color: hsl(var(--pw-jade-ink)); }
+input::placeholder, textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.recharts-legend-item-text { color: hsl(var(--pw-sub)) !important; }
+.recharts-default-tooltip .recharts-tooltip-item,
+.recharts-default-tooltip .recharts-tooltip-label { color: hsl(var(--foreground)) !important; }
