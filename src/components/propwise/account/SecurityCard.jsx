@@ -31,12 +31,13 @@ export default function SecurityCard() {
     if (next === current) { setError("Choose a new password that differs from your current one."); return; }
     setSaving(true);
     try {
+      // The functions client does not unwrap responses, so `res` is the full
+      // axios response and the JSON body lives at `res.data`.
       const res = await base44.functions.invoke("manageAccount", { action: "changePassword", currentPassword: current, newPassword: next });
-      // The browser SDK unwraps axios responses, so `res` is the JSON body directly.
-      if (res?.ok) { reset(); setSuccess(true); setTimeout(() => setSuccess(false), 5000); }
-      else setError(res?.error || "Unable to change password. Please retry.");
+      if (res?.data?.ok) { reset(); setSuccess(true); setTimeout(() => setSuccess(false), 5000); }
+      else setError(res?.data?.error || "Unable to change password. Please retry.");
     } catch (err) {
-      setError(err?.data?.error || err?.message || "Unable to change password. Please retry.");
+      setError(err?.response?.data?.error || err?.message || "Unable to change password. Please retry.");
     } finally { setSaving(false); }
   };
 

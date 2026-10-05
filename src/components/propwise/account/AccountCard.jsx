@@ -26,18 +26,19 @@ export default function AccountCard({ user, onNameUpdated }) {
     if (!trimmed) { setError("Please enter your full name."); return; }
     setSaving(true); setError(""); setSuccess(false);
     try {
+      // The functions client does not unwrap responses, so `res` is the full
+      // axios response and the JSON body lives at `res.data`.
       const res = await base44.functions.invoke("manageAccount", { action: "updateName", display_name: trimmed });
-      // The browser SDK unwraps axios responses, so `res` is the JSON body directly.
-      if (res?.ok) {
+      if (res?.data?.ok) {
         setEditing(false);
         setSuccess(true);
         await onNameUpdated?.();
         setTimeout(() => setSuccess(false), 4000);
       } else {
-        setError(res?.error || "Unable to update your profile. Please retry.");
+        setError(res?.data?.error || "Unable to update your profile. Please retry.");
       }
     } catch (e) {
-      setError(e?.data?.error || e?.message || "Unable to update your profile. Please retry.");
+      setError(e?.response?.data?.error || e?.message || "Unable to update your profile. Please retry.");
     } finally { setSaving(false); }
   };
 
